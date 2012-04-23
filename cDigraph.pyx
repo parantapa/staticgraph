@@ -26,24 +26,27 @@ from cPickle import load, dump
 import numpy as np
 DTYPE   = np.uint32
 
-INVALID = 4294967295
+cimport numpy as np
+cimport cython
+ctypedef np.uint32_t DTYPE_t
+cdef DTYPE_t INVALID = 4294967295
 
-class DiGraphBase(object):
+cdef class DiGraphBase:
     """
     Base class for DiGraph and StaticDiGraph
 
     Abstract class; Don't use directly.
     """
 
-    def __init__(self):
-        self.pred        = None     # Storage for the predecessor lists
-        self.succ        = None     # Storage for the successor lists
-        self.p_head      = None     # List head pointer for predecessors
-        self.s_head      = None     # List head pointer for successors
-        self.m_indegree  = None     # Out degree of a node
-        self.m_outdegree = None     # In degree of a node
-        self.n_nodes     = None     # Number of nodes
-        self.n_arcs      = None     # Number of arcs
+    cdef:
+        np.ndarray pred         # Storage for the predecessor lists
+        np.ndarray succ         # Storage for the successor lists
+        np.ndarray p_head       # List head pointer for predecessors
+        np.ndarray s_head       # List head pointer for successors
+        np.ndarray m_indegree   # Out degree of a node
+        np.ndarray m_outdegree  # In degree of a node
+        size_t n_nodes          # Number of nodes
+        size_t n_arcs           # Number of arcs
 
     def nbytes(self):
         """
@@ -134,7 +137,7 @@ class DiGraphBase(object):
                 return True
         return False
 
-class DiGraph(DiGraphBase):
+cdef class DiGraph(DiGraphBase):
     """
     DiGraph(node_reserve, arc_reserve)
 
@@ -145,8 +148,10 @@ class DiGraph(DiGraphBase):
     add_arc method.
     """
 
+    cdef size_t node_reserve
+    cdef size_t arc_reserve
+
     def __init__(self, node_reserve, arc_reserve):
-        super(DiGraph, self).__init__()
 
         self.node_reserve = node_reserve
         self.arc_reserve  = arc_reserve
@@ -165,17 +170,22 @@ class DiGraph(DiGraphBase):
         self.n_nodes = node_reserve
         self.n_arcs  = 0
 
-    def add_arcs(self, arc_gen):
+    def add_arcs(self, object arc_gen):
         """
         Add an arc from node u to node v
         """
 
-        pred = self.pred
-        succ = self.succ
-        p_head = self.p_head
-        s_head = self.s_head
-        m_indegree = self.m_indegree
-        m_outdegree = self.m_outdegree
+        cdef:
+            size_t u
+            size_t v
+            size_t head
+            size_t new = self.n_arcs
+            np.ndarray[DTYPE_t, ndim=2] pred = self.pred
+            np.ndarray[DTYPE_t, ndim=2] succ = self.succ
+            np.ndarray[DTYPE_t, ndim=1] p_head = self.p_head
+            np.ndarray[DTYPE_t, ndim=1] s_head = self.s_head
+            np.ndarray[DTYPE_t, ndim=1] m_indegree = self.m_indegree
+            np.ndarray[DTYPE_t, ndim=1] m_outdegree = self.m_outdegree
 
         for u, v in arc_gen:
             new = self.n_arcs
@@ -216,7 +226,7 @@ class DiGraph(DiGraphBase):
             yield self.pred[i, 0]
             i = self.pred[i, 1]
 
-class StaticDiGraph(DiGraphBase):
+cdef class StaticDiGraph(DiGraphBase):
     """
     StaticDiGraph(store_dir, [data])
 
@@ -232,7 +242,6 @@ class StaticDiGraph(DiGraphBase):
     """
 
     def __init__(self, store_dir, data=None):
-        super(StaticDiGraph, self).__init__()
 
         if data is None:
             assert isdir(store_dir)
@@ -276,26 +285,50 @@ class StaticDiGraph(DiGraphBase):
                                      mode=mode, dtype=DTYPE,
                                      shape=(self.n_nodes,))
 
-    def _copy(self, data):
+    cdef _copy(self, DiGraph data):
         """
         Copy the given graph onto this one
         """
 
-        self.m_indegree[:]  = data.m_indegree[:]
-        self.m_outdegree[:] = data.m_outdegree[:]
+        cdef:
+            size_t u
+            size_t v
+            size_t i
+            size_t idx
+
+            np.ndarray[DTYPE_t, ndim=1] self_pred = self.pred
+            np.ndarray[DTYPE_t, ndim=1] self_succ = self.succ
+            np.ndarray[DTYPE_t, ndim=1] self_p_head = self.p_head
+            np.ndarray[DTYPE_t, ndim=1] self_s_head = self.s_head
+            np.ndarray[DTYPE_t, ndim=1] self_m_indegree = self.m_indegree
+            np.ndarray[DTYPE_t, ndim=1] self_m_outdegree = self.m_outdegree
+
+            np.ndarray[DTYPE_t, ndim=2] data_pred = data.pred
+            np.ndarray[DTYPE_t, ndim=2] data_succ = data.succ
+            np.ndarray[DTYPE_t, ndim=1] data_p_head = data.p_head
+            np.ndarray[DTYPE_t, ndim=1] data_s_head = data.s_head
+            np.ndarray[DTYPE_t, ndim=1] data_m_indegree = data.m_indegree
+            np.ndarray[DTYPE_t, ndim=1] data_m_outdegree = data.m_outdegree
+
+        self_m_indegree[:]  = data_m_indegree[:]
+        self_m_outdegree[:] = data_m_outdegree[:]
 
         idx = 0
-        for u in xrange(self.n_nodes):
-            self.s_head[u] = idx
-            for v in data.successors(u):
-                self.succ[idx] = v
+        for u in range(self.n_nodes):
+            self_s_head[u] = idx
+            i = data_s_head[u]
+            while i != INVALID:
+                self_succ[idx] = data_succ[i, 0]
+                i = data_succ[i, 1]
                 idx += 1
 
         idx = 0
-        for v in xrange(self.n_nodes):
-            self.p_head[v] = idx
-            for u in data.predecessors(v):
-                self.pred[idx] = u
+        for v in range(self.n_nodes):
+            self_p_head[v] = idx
+            i = data_p_head[v]
+            while i != INVALID:
+                self_pred[idx] = data_pred[i, 0]
+                i =  data_pred[i, 1]
                 idx += 1
 
     def successors(self, u):
