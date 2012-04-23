@@ -7,8 +7,8 @@ from __future__ import division
 from random import randint
 from collections import Counter
 
-from largegraph import digraph
-from largegraph import cDigraph
+from staticgraph import digraph
+from staticgraph import digrapho
 
 def make_graphs(tmpdir):
     """
@@ -19,7 +19,7 @@ def make_graphs(tmpdir):
     arc_reserve = 10000
 
     G1 = digraph.DiGraph(node_reserve, arc_reserve)
-    G2 = cDigraph.DiGraph(node_reserve, arc_reserve)
+    G2 = digrapho.DiGraph(node_reserve, arc_reserve)
 
     arc_gen = []
     for _ in xrange(arc_reserve):
@@ -31,7 +31,7 @@ def make_graphs(tmpdir):
     G2.add_arcs(arc_gen)
 
     H1 = digraph.StaticDiGraph(str(tmpdir.join("H1")), G1)
-    H2 = cDigraph.StaticDiGraph(str(tmpdir.join("H2")), G2)
+    H2 = digrapho.StaticDiGraph(str(tmpdir.join("H2")), G2)
 
     return G1, G2, H1, H2, arc_gen
 
@@ -99,7 +99,7 @@ def test_persistance(tmpdir):
     G1, G2, _, _, arc_gen = make_graphs(tmpdir)
 
     H1 = digraph.StaticDiGraph(str(tmpdir.join("H1")))
-    H2 = cDigraph.StaticDiGraph(str(tmpdir.join("H2")))
+    H2 = digrapho.StaticDiGraph(str(tmpdir.join("H2")))
 
     for u in xrange(G1.order()):
         a = G1.indegree(u)

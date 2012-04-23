@@ -8,8 +8,8 @@ import timeit
 from random import randint
 from collections import Counter
 
-from largegraph import digraph
-from largegraph import cDigraph
+from staticgraph import digraph
+from staticgraph import digrapho
 
 def make_graphs(add_arcs=True):
     """
@@ -20,7 +20,7 @@ def make_graphs(add_arcs=True):
     arc_reserve = 10000
 
     G1 = digraph.DiGraph(node_reserve, arc_reserve)
-    G2 = cDigraph.DiGraph(node_reserve, arc_reserve)
+    G2 = digrapho.DiGraph(node_reserve, arc_reserve)
 
     arc_gen = []
     for _ in xrange(arc_reserve):
@@ -36,7 +36,7 @@ def make_graphs(add_arcs=True):
 
 def test_add_arcs():
     """
-    We have at least a 100 time increase in add_arcs speed for cDigraph.
+    We have at least a 100 time increase in add_arcs speed for digrapho.
     We have same memory usage for both modules.
     """
 
