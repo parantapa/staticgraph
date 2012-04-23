@@ -108,14 +108,19 @@ class DiGraphBase(object):
 
         return xrange(self.n_nodes)
 
-    def arcs(self):
+    def arcs(self, fwd=True):
         """
         Return a iterable that yields the arcs of the graph
         """
 
-        for u in self.nodes():
-            for v in self.successors(u):
-                yield (u, v)
+        if fwd:
+            for u in self.nodes():
+                for v in self.successors(u):
+                    yield (u, v)
+        else:
+            for v in self.nodes():
+                for u in self.predecessors(v):
+                    yield (u, v)
 
     def has_node(self, u):
         """
@@ -245,8 +250,8 @@ class StaticDiGraph(DiGraphBase):
             assert not exists(store_dir)
             os.mkdir(store_dir, 0755)
 
-            self.n_nodes  = data.n_nodes
-            self.n_arcs   = data.n_arcs
+            self.n_nodes  = data.order()
+            self.n_arcs   = data.size()
 
             with open(join(store_dir, "base.pickle"), "wb") as fobj:
                 dump((self.n_nodes, self.n_arcs), fobj, -1)
@@ -272,7 +277,7 @@ class StaticDiGraph(DiGraphBase):
         self.m_indegree  = np.memmap(join(store_dir, "m_indegree.dat"),
                                      mode=mode, dtype=DTYPE,
                                      shape=(self.n_nodes,))
-        self.m_outdegree = np.memmap(join(store_dir, "m_indegree.dat"),
+        self.m_outdegree = np.memmap(join(store_dir, "m_outdegree.dat"),
                                      mode=mode, dtype=DTYPE,
                                      shape=(self.n_nodes,))
 
