@@ -10,7 +10,7 @@ Use this if you already have a static graph. There is almost no support for
 modifying the graph at runtime.
 
 DiGraph can store 50 million nodes and 2 billion edges using 30 GB memory.
-StaticDiGraph can store the same using about 16 GB memory.
+CompactDiGraph can store the same using about 16 GB memory.
 
 NOTE: Since 32 bit unsigned storage is used, this graph is unable to handle more
 than 4 Billion edges or nodes (2^32-1 to be more precise).
@@ -175,6 +175,7 @@ class DiGraph(DiGraphBase):
         Add an arc from node u to node v
         """
 
+        n_arcs = self.n_arcs
         pred = self.pred
         succ = self.succ
         p_head = self.p_head
@@ -183,7 +184,7 @@ class DiGraph(DiGraphBase):
         m_outdegree = self.m_outdegree
 
         for u, v in arc_gen:
-            new = self.n_arcs
+            new = n_arcs
 
             head = p_head[v]
             pred[new, 0] = u
@@ -197,7 +198,9 @@ class DiGraph(DiGraphBase):
             s_head[u] = new
             m_outdegree[u] += 1
 
-            self.n_arcs += 1
+            n_arcs += 1
+
+        self.n_arcs = n_arcs
 
     def successors(self, u):
         """
@@ -221,9 +224,9 @@ class DiGraph(DiGraphBase):
             yield self.pred[i, 0]
             i = self.pred[i, 1]
 
-class StaticDiGraph(DiGraphBase):
+class CompactDiGraph(DiGraphBase):
     """
-    StaticDiGraph(store_dir, [data])
+    CompactDiGraph(store_dir, [data])
 
     Persistent static DiGraph implementation. store_dir is the directory where
     the data will be stored. In case data parameter is not given, it must point
@@ -231,13 +234,13 @@ class StaticDiGraph(DiGraphBase):
     not exist, it will be created.
 
     Takes half memory for arcs than DiGraph. Memory mapped files are used for
-    storage. Storage can be reduced because during creation, ind egree and
+    storage. Storage can be reduced because during creation, in degree and
     out degree of nodes are known. So instead of using linked list, we use
     contiguous storage.
     """
 
     def __init__(self, store_dir, data=None):
-        super(StaticDiGraph, self).__init__()
+        super(CompactDiGraph, self).__init__()
 
         if data is None:
             assert isdir(store_dir)
@@ -247,17 +250,24 @@ class StaticDiGraph(DiGraphBase):
 
             self._memmap(store_dir, "r")
         else:
-            assert not exists(store_dir)
-            os.mkdir(store_dir, 0755)
+            if not exists(store_dir):
+                os.mkdir(store_dir, 0755)
 
-            self.n_nodes  = data.order()
-            self.n_arcs   = data.size()
+            self.n_nodes  = data.n_nodes
+            self.n_arcs   = data.n_arcs
 
             with open(join(store_dir, "base.pickle"), "wb") as fobj:
                 dump((self.n_nodes, self.n_arcs), fobj, -1)
 
             self._memmap(store_dir, "w+")
             self._copy(data)
+
+            self.pred.flush()
+            self.succ.flush()
+            self.p_head.flush()
+            self.s_head.flush()
+            self.m_indegree.flush()
+            self.m_outdegree.flush()
 
     def _memmap(self, store_dir, mode):
         """

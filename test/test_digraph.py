@@ -4,81 +4,126 @@ Tests for static graph modules
 
 from __future__ import division
 
-import timeit
+import os
+import tempfile
 from random import randint
 from collections import Counter
 
 from staticgraph import digraph
-from staticgraph import digrapho
 
-def make_graphs(add_arcs=True):
+G, H, I = None, None, None
+ARC_GEN = None
+STORE_DIR = None
+
+def setup_module(module):
     """
     Create the graphs
     """
 
+    global G, H, I, ARC_GEN, STORE_DIR
+
     node_reserve = 100
     arc_reserve = 10000
 
-    G1 = digraph.DiGraph(node_reserve, arc_reserve)
-    G2 = digrapho.DiGraph(node_reserve, arc_reserve)
+    G = digraph.DiGraph(node_reserve, arc_reserve)
 
-    arc_gen = []
+    ARC_GEN = []
     for _ in xrange(arc_reserve):
         u = randint(0, node_reserve -1)
         v = randint(0, node_reserve -1)
-        arc_gen.append((u, v))
+        ARC_GEN.append((u, v))
 
-    if add_arcs:
-        G1.add_arcs(arc_gen)
-        G2.add_arcs(arc_gen)
+    G.add_arcs(ARC_GEN)
 
-    return G1, G2, arc_gen
+    STORE_DIR = tempfile.mkdtemp()
+    H = digraph.CompactDiGraph(STORE_DIR, G)
+    I = digraph.CompactDiGraph(STORE_DIR)
 
-def test_add_arcs():
+def teardown_module(module):
     """
-    We have at least a 100 time increase in add_arcs speed for digrapho.
-    We have same memory usage for both modules.
-    """
-
-    G1, G2, arc_gen = make_graphs(False)
-
-    x = timeit.timeit(lambda: G1.add_arcs(arc_gen), number = 1)
-    y = timeit.timeit(lambda: G2.add_arcs(arc_gen), number = 1)
-
-    assert (x / y) > 100
-    assert G1.nbytes() == G2.nbytes()
-
-def test_same_data():
-    """
-    Both modules produce the same data.
+    Remove the created temporary directory
     """
 
-    G1, G2, arc_gen = make_graphs()
+    os.remove(os.path.join(STORE_DIR, "base.pickle"))
+    os.remove(os.path.join(STORE_DIR, "pred.dat"))
+    os.remove(os.path.join(STORE_DIR, "succ.dat"))
+    os.remove(os.path.join(STORE_DIR, "p_head.dat"))
+    os.remove(os.path.join(STORE_DIR, "s_head.dat"))
+    os.remove(os.path.join(STORE_DIR, "m_indegree.dat"))
+    os.remove(os.path.join(STORE_DIR, "m_outdegree.dat"))
+    os.rmdir(STORE_DIR)
 
-    for u in xrange(G1.order()):
-        a = G1.indegree(u)
-        b = G2.indegree(u)
+def test_indegree():
+    """
+    Test in degree integrity
+    """
+
+    for u in G.nodes():
+        a = G.indegree(u)
+        b = H.indegree(u)
+        c = I.indegree(u)
         assert a == b
+        assert b == c
 
-        a = G1.outdegree(u)
-        b = G2.outdegree(u)
+def test_outdegree():
+    """
+    Test in degree integrity
+    """
+
+    for u in G.nodes():
+        a = G.outdegree(u)
+        b = H.outdegree(u)
+        c = I.outdegree(u)
         assert a == b
+        assert b == c
 
-        a = list(G1.successors(u))
-        b = list(G2.successors(u))
+def test_successors():
+    """
+    Test node successors
+    """
+
+    for u in G.nodes():
+        a = list(G.successors(u))
+        b = list(H.successors(u))
+        c = list(I.successors(u))
         assert a == b
+        assert b == c
 
-        a = list(G1.predecessors(u))
-        b = list(G2.predecessors(u))
+def test_predecessors():
+    """
+    Test node predecessors
+    """
+
+    for u in G.nodes():
+        a = list(G.predecessors(u))
+        b = list(H.predecessors(u))
+        c = list(I.predecessors(u))
         assert a == b
+        assert b == c
 
-    a = Counter(arc_gen)
-    b = Counter(G1.arcs())
-    c = Counter(G2.arcs())
-    d = Counter(G1.arcs(False))
-    e = Counter(G2.arcs(False))
+def test_edges_forward():
+    """
+    Test edges generated using successors
+    """
+
+    a = Counter(ARC_GEN)
+    b = Counter(G.arcs())
+    c = Counter(H.arcs())
+    d = Counter(I.arcs())
     assert a == b
     assert b == c
     assert c == d
-    assert d == e
+
+def test_edges_backward():
+    """
+    Test edges generated using predecessors
+    """
+
+    a = Counter(ARC_GEN)
+    b = Counter(G.arcs(False))
+    c = Counter(H.arcs(False))
+    d = Counter(I.arcs(False))
+    assert a == b
+    assert b == c
+    assert c == d
 
