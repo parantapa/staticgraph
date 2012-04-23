@@ -4,15 +4,12 @@ Tests for static graph modules
 
 from __future__ import division
 
-import pyximport
-pyximport.install()
-
 import timeit
 from random import randint
 from collections import Counter
 
-import digraph
-import cDigraph
+from largegraph import digraph
+from largegraph import cDigraph
 
 def test_add_arcs():
     """
