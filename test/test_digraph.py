@@ -25,7 +25,7 @@ def setup_module(module):
     node_reserve = 100
     arc_reserve = 10000
 
-    G = digraph.DiGraph(node_reserve, arc_reserve)
+    G = digraph.MultiDiGraph(node_reserve)
 
     ARC_GEN = []
     for _ in xrange(arc_reserve):
@@ -33,11 +33,11 @@ def setup_module(module):
         v = randint(0, node_reserve -1)
         ARC_GEN.append((u, v))
 
-    G.add_arcs(ARC_GEN)
+    G.add_arcs_from(ARC_GEN)
 
     STORE_DIR = tempfile.mkdtemp()
-    H = digraph.CompactDiGraph(STORE_DIR, G)
-    I = digraph.CompactDiGraph(STORE_DIR)
+    H = digraph.CMultiDiGraph(STORE_DIR, G)
+    I = digraph.CMultiDiGraph(STORE_DIR)
 
 def teardown_module(module):
     """
@@ -45,12 +45,10 @@ def teardown_module(module):
     """
 
     os.remove(os.path.join(STORE_DIR, "base.pickle"))
-    os.remove(os.path.join(STORE_DIR, "pred.dat"))
-    os.remove(os.path.join(STORE_DIR, "succ.dat"))
-    os.remove(os.path.join(STORE_DIR, "p_head.dat"))
-    os.remove(os.path.join(STORE_DIR, "s_head.dat"))
-    os.remove(os.path.join(STORE_DIR, "m_indegree.dat"))
-    os.remove(os.path.join(STORE_DIR, "m_outdegree.dat"))
+    os.remove(os.path.join(STORE_DIR, "p_indptr.dat"))
+    os.remove(os.path.join(STORE_DIR, "p_indices.dat"))
+    os.remove(os.path.join(STORE_DIR, "s_indptr.dat"))
+    os.remove(os.path.join(STORE_DIR, "s_indices.dat"))
     os.rmdir(STORE_DIR)
 
 def test_indegree():
