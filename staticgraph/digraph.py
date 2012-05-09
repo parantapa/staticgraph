@@ -128,16 +128,32 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
 
     assert np.iinfo(dtype).max > n_nodes
     assert np.iinfo(dtype).max > n_arcs
+    invalid = np.iinfo(dtype).max
 
     # Load all the stuff into our own lists
-    pred = np.empty(n_nodes, dtype=object)
-    succ = np.empty(n_nodes, dtype=object)
-    for i in xrange(n_nodes):
-        pred[i] = list()
-        succ[i] = list()
-    for u, v in islice(iterable, n_arcs):
-        pred[v].append(u)
-        succ[u].append(v)
+    p_head = np.empty(n_nodes, dtype=dtype)
+    p_next = np.empty(n_arcs, dtype=dtype)
+    p_data = np.empty(n_arcs, dtype=dtype)
+    s_head = np.empty(n_nodes, dtype=dtype)
+    s_next = np.empty(n_arcs, dtype=dtype)
+    s_data = np.empty(n_arcs, dtype=dtype)
+
+    p_head.fill(invalid)
+    s_head.fill(invalid)
+
+    iterable = iter(iterable)
+    for i in xrange(n_arcs):
+        u, v = next(iterable)
+
+        head = p_head[v]
+        p_data[i] = u
+        p_next[i] = head
+        p_head[v] = i
+
+        head = s_head[u]
+        s_data[i] = v
+        s_next[i] = head
+        s_head[u] = i
 
     # The final data is stored using mmap array
     if not exists(store_dir):
@@ -153,13 +169,24 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
 
     # Copy stuff into the mmapped arrays
     p_indptr[0] = 0
-    for i, x in enumerate(pred):
-        p_indptr[i + 1] = p_indptr[i] + len(x)
-        p_indices[p_indptr[i]:p_indptr[i + 1]] = x
+    i = 0
+    for v in xrange(n_nodes):
+        j = p_head[v]
+        while j != invalid:
+            p_indices[i] = p_data[j]
+            j = p_next[j]
+            i += 1
+        p_indptr[v + 1] = i
+
     s_indptr[0] = 0
-    for i, x in enumerate(succ):
-        s_indptr[i + 1] = s_indptr[i] + len(x)
-        s_indices[s_indptr[i]:s_indptr[i + 1]] = x
+    i = 0
+    for u in xrange(n_nodes):
+        j = s_head[u]
+        while j != invalid:
+            s_indices[i] = s_data[j]
+            j = s_next[j]
+            i += 1
+        s_indptr[u + 1] = i
 
     # Make sure stuff is saved so others can read
     with open(join(store_dir, "base.pickle"), "wb") as fobj:

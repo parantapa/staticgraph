@@ -26,7 +26,7 @@ def setup_module(module):
     n_arcs  = 10000
 
     ARC_GEN = []
-    for _ in xrange(n_nodes):
+    for _ in xrange(n_arcs):
         u = randint(0, n_nodes -1)
         v = randint(0, n_nodes -1)
         ARC_GEN.append((u, v))
