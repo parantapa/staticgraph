@@ -9,9 +9,9 @@ import tempfile
 from random import randint
 from collections import Counter
 
-from staticgraph import DiGraph, CDiGraph
+from staticgraph import make, load
 
-G, H, I = None, None, None
+G, H = None, None
 ARC_GEN = None
 STORE_DIR = None
 
@@ -20,24 +20,20 @@ def setup_module(module):
     Create the graphs
     """
 
-    global G, H, I, ARC_GEN, STORE_DIR
+    global G, H, ARC_GEN, STORE_DIR
 
-    node_reserve = 100
-    arc_reserve = 10000
-
-    G = DiGraph(node_reserve)
+    n_nodes = 100
+    n_arcs  = 10000
 
     ARC_GEN = []
-    for _ in xrange(arc_reserve):
-        u = randint(0, node_reserve -1)
-        v = randint(0, node_reserve -1)
+    for _ in xrange(n_nodes):
+        u = randint(0, n_nodes -1)
+        v = randint(0, n_nodes -1)
         ARC_GEN.append((u, v))
 
-    G.add_arcs_from(ARC_GEN)
-
     STORE_DIR = tempfile.mkdtemp()
-    H = CDiGraph(STORE_DIR, G)
-    I = CDiGraph(STORE_DIR)
+    G = make(STORE_DIR, n_nodes, n_arcs, ARC_GEN)
+    H = load(STORE_DIR)
 
 def teardown_module(module):
     """
@@ -59,9 +55,7 @@ def test_indegree():
     for u in G.nodes():
         a = G.indegree(u)
         b = H.indegree(u)
-        c = I.indegree(u)
         assert a == b
-        assert b == c
 
 def test_outdegree():
     """
@@ -71,9 +65,7 @@ def test_outdegree():
     for u in G.nodes():
         a = G.outdegree(u)
         b = H.outdegree(u)
-        c = I.outdegree(u)
         assert a == b
-        assert b == c
 
 def test_successors():
     """
@@ -83,9 +75,7 @@ def test_successors():
     for u in G.nodes():
         a = list(G.successors(u))
         b = list(H.successors(u))
-        c = list(I.successors(u))
         assert a == b
-        assert b == c
 
 def test_predecessors():
     """
@@ -95,9 +85,7 @@ def test_predecessors():
     for u in G.nodes():
         a = list(G.predecessors(u))
         b = list(H.predecessors(u))
-        c = list(I.predecessors(u))
         assert a == b
-        assert b == c
 
 def test_edges_forward():
     """
@@ -107,10 +95,8 @@ def test_edges_forward():
     a = Counter(ARC_GEN)
     b = Counter(G.arcs())
     c = Counter(H.arcs())
-    d = Counter(I.arcs())
     assert a == b
     assert b == c
-    assert c == d
 
 def test_edges_backward():
     """
@@ -120,8 +106,6 @@ def test_edges_backward():
     a = Counter(ARC_GEN)
     b = Counter(G.arcs(False))
     c = Counter(H.arcs(False))
-    d = Counter(I.arcs(False))
     assert a == b
     assert b == c
-    assert c == d
 

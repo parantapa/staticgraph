@@ -6,60 +6,73 @@ __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 __version__ = "0.1"
 
 import os
-import sys
 from os.path import join, exists, isdir
-from cPickle import load, dump
+import cPickle as pk
+from itertools import islice
 
 import numpy as np
 
-# Base data type
-DTYPE = np.uint32
-
-class DiGraphBase(object):
+class DiGraph(object):
     """
-    Base class for DiGraph and CDiGraph
-
-    Abstract class; Don't use directly.
+    DiGraph(store_dir)
     """
 
-    def __init__(self):
-        self.n_nodes = None
-        self.n_arcs  = None
+    def __init__(self, p_indptr, p_indices,
+                       s_indptr, s_indices,
+                       n_nodes, n_arcs):
+        self.p_indptr  = p_indptr
+        self.p_indices = p_indices
+        self.s_indptr  = s_indptr
+        self.s_indices = s_indices
+        self.n_nodes   = n_nodes
+        self.n_arcs    = n_arcs
 
     def nbytes(self):
         """
         Returns the total bytes used to store internal arrays
         """
 
-        raise NotImplementedError()
+        nbytes  = self.p_indptr.nbytes
+        nbytes += self.p_indices.nbytes
+        nbytes += self.s_indptr.nbytes
+        nbytes += self.s_indices.nbytes
+        return nbytes
 
     def successors(self, u):
         """
         Yield successors of u
         """
 
-        raise NotImplementedError()
+        start = self.s_indptr.item(u)
+        stop  = self.s_indptr.item(u + 1)
+        return self.s_indices[start:stop]
 
     def predecessors(self, v):
         """
         Yield predecessors of v
         """
 
-        raise NotImplementedError()
+        start = self.p_indptr.item(v)
+        stop  = self.p_indptr.item(v + 1)
+        return self.p_indices[start:stop]
 
     def indegree(self, v):
         """
         Return indegree of node v
         """
 
-        raise NotImplementedError()
+        start = self.p_indptr.item(v)
+        stop  = self.p_indptr.item(v + 1)
+        return stop - start
 
     def outdegree(self, u):
         """
         Return outdegree of node u
         """
 
-        raise NotImplementedError()
+        start = self.s_indptr.item(u)
+        stop  = self.s_indptr.item(u + 1)
+        return stop - start
 
     def order(self):
         """
@@ -108,146 +121,77 @@ class DiGraphBase(object):
 
         return sum(1 for vv in self.successors(u) if v == vv)
 
-class DiGraph(DiGraphBase):
+def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
     """
-    DiGraph(n_nodes)
-    """
-
-    def __init__(self, n_nodes):
-        super(DiGraph, self).__init__()
-
-        self.pred = np.empty(n_nodes, dtype=object)
-        self.succ = np.empty(n_nodes, dtype=object)
-
-        for i in xrange(n_nodes):
-            self.pred.itemset(i, list())
-            self.succ.itemset(i, list())
-
-        self.n_nodes = n_nodes
-        self.n_arcs  = 0
-
-    def nbytes(self):
-        nbytes  = sum(sys.getsizeof(x) for x in self.pred)
-        nbytes += sum(sys.getsizeof(x) for x in self.succ)
-        nbytes += self.pred.nbytes
-        nbytes += self.pred.nbytes
-        return nbytes
-
-    def successors(self, u):
-        return self.succ[u]
-
-    def predecessors(self, v):
-        return self.pred[v]
-
-    def indegree(self, v):
-        return len(self.pred[v])
-
-    def outdegree(self, u):
-        return len(self.succ[u])
-
-    def add_arcs_from(self, iterable):
-        """
-        Pass on a iterable to add arcs to the graph
-        """
-
-        for u, v in iterable:
-            self.pred[v].append(u)
-            self.succ[u].append(v)
-            self.n_arcs += 1
-
-class CDiGraph(DiGraphBase):
-    """
-    CompactDiGraph(store_dir, [G])
+    Make a DiGraph
     """
 
-    def __init__(self, store_dir, G=None):
-        super(CDiGraph, self).__init__()
+    assert np.iinfo(dtype).max > n_nodes
+    assert np.iinfo(dtype).max > n_arcs
 
-        self.p_indptr  = None
-        self.p_indices = None
-        self.s_indptr  = None
-        self.s_indices = None
+    # Load all the stuff into our own lists
+    pred = np.empty(n_nodes, dtype=object)
+    succ = np.empty(n_nodes, dtype=object)
+    for i in xrange(n_nodes):
+        pred[i] = list()
+        succ[i] = list()
+    for u, v in islice(iterable, n_arcs):
+        pred[v].append(u)
+        succ[u].append(v)
 
-        if G is None:
-            assert isdir(store_dir)
+    # The final data is stored using mmap array
+    if not exists(store_dir):
+        os.mkdir(store_dir, 0755)
 
-            with open(join(store_dir, "base.pickle"), "rb") as fobj:
-                self.n_nodes, self.n_arcs = load(fobj)
+    mmap = lambda x, y : np.memmap(join(store_dir, x), mode="w+",
+                                   dtype=dtype, shape=y)
 
-            self._mmap(store_dir, "r")
-        else:
-            if not exists(store_dir):
-                os.mkdir(store_dir, 0755)
+    p_indptr  = mmap("p_indptr.dat", n_nodes + 1)
+    p_indices = mmap("p_indices.dat", n_arcs)
+    s_indptr  = mmap("s_indptr.dat", n_nodes + 1)
+    s_indices = mmap("s_indices.dat", n_arcs)
 
-            self.n_nodes  = G.n_nodes
-            self.n_arcs   = G.n_arcs
+    # Copy stuff into the mmapped arrays
+    p_indptr[0] = 0
+    for i, x in enumerate(pred):
+        p_indptr[i + 1] = p_indptr[i] + len(x)
+        p_indices[p_indptr[i]:p_indptr[i + 1]] = x
+    s_indptr[0] = 0
+    for i, x in enumerate(succ):
+        s_indptr[i + 1] = s_indptr[i] + len(x)
+        s_indices[s_indptr[i]:s_indptr[i + 1]] = x
 
-            with open(join(store_dir, "base.pickle"), "wb") as fobj:
-                dump((self.n_nodes, self.n_arcs), fobj, -1)
+    # Make sure stuff is saved so others can read
+    with open(join(store_dir, "base.pickle"), "wb") as fobj:
+        pk.dump((n_nodes, n_arcs, dtype), fobj, -1)
 
-            self._mmap(store_dir, "w+")
-            self._copy(G)
+    p_indptr.flush()
+    p_indices.flush()
+    s_indptr.flush()
+    s_indices.flush()
 
-    def _mmap(self, store_dir, mode):
-        """
-        Initialize the memory mapped files
-        """
+    # Finally create our graph
+    G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
+    return G
 
-        assert np.iinfo(DTYPE).max > self.n_arcs
+def load(store_dir):
+    """
+    Load a DiGraph
+    """
 
-        mmap = lambda x, y : np.memmap(join(store_dir, x), mode=mode,
-                                    dtype=DTYPE, shape=y)
+    assert isdir(store_dir)
 
-        self.p_indptr  = mmap("p_indptr.dat", self.n_nodes + 1)
-        self.p_indices = mmap("p_indices.dat", self.n_arcs)
+    with open(join(store_dir, "base.pickle")) as fobj:
+        n_nodes, n_arcs, dtype = pk.load(fobj)
 
-        self.s_indptr  = mmap("s_indptr.dat", self.n_nodes + 1)
-        self.s_indices = mmap("s_indices.dat", self.n_arcs)
+    mmap = lambda x, y : np.memmap(join(store_dir, x), mode="r",
+                                   dtype=dtype, shape=y)
 
-    def _copy(self, G):
-        """
-        Copy the given graph onto this one
-        """
+    p_indptr  = mmap("p_indptr.dat", n_nodes + 1)
+    p_indices = mmap("p_indices.dat", n_arcs)
+    s_indptr  = mmap("s_indptr.dat", n_nodes + 1)
+    s_indices = mmap("s_indices.dat", n_arcs)
 
-        self.p_indptr[0] = 0
-        for i, x in enumerate(G.pred):
-            self.p_indptr[i + 1] = self.p_indptr[i] + len(x)
-            self.p_indices[self.p_indptr[i]:self.p_indptr[i + 1]] = x
-
-        self.s_indptr[0] = 0
-        for i, x in enumerate(G.succ):
-            self.s_indptr[i + 1] = self.s_indptr[i] + len(x)
-            self.s_indices[self.s_indptr[i]:self.s_indptr[i + 1]] = x
-
-        self.p_indptr.flush()
-        self.p_indices.flush()
-        self.s_indptr.flush()
-        self.p_indices.flush()
-
-    def nbytes(self):
-        nbytes  = self.p_indptr.nbytes
-        nbytes += self.p_indices.nbytes
-        nbytes += self.s_indptr.nbytes
-        nbytes += self.s_indices.nbytes
-        return nbytes
-
-    def successors(self, u):
-        start = self.s_indptr.item(u)
-        stop  = self.s_indptr.item(u + 1)
-        return self.s_indices[start:stop]
-
-    def predecessors(self, v):
-        start = self.p_indptr.item(v)
-        stop  = self.p_indptr.item(v + 1)
-        return self.p_indices[start:stop]
-
-    def indegree(self, v):
-        start = self.p_indptr.item(v)
-        stop  = self.p_indptr.item(v + 1)
-        return stop - start
-
-    def outdegree(self, u):
-        start = self.s_indptr.item(u)
-        stop  = self.s_indptr.item(u + 1)
-        return stop - start
+    G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
+    return G
 

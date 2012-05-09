@@ -1,1 +1,1 @@
-from staticgraph.digraph import DiGraph, CDiGraph
+from staticgraph.digraph import make, load
