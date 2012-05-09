@@ -8,7 +8,6 @@ __version__ = "0.1"
 import os
 from os.path import join, exists, isdir
 import cPickle as pk
-from itertools import islice
 
 import numpy as np
 
@@ -145,14 +144,14 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
     for i in xrange(n_arcs):
         u, v = next(iterable)
 
-        head = p_head[v]
+        tmp = p_head[v]
         p_data[i] = u
-        p_next[i] = head
+        p_next[i] = tmp
         p_head[v] = i
 
-        head = s_head[u]
+        tmp = s_head[u]
         s_data[i] = v
-        s_next[i] = head
+        s_next[i] = tmp
         s_head[u] = i
 
     # The final data is stored using mmap array
