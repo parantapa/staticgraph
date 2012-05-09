@@ -1,1 +1,1 @@
-from staticgraph.digraph import MultiDiGraph, CMultiDiGraph
+from staticgraph.digraph import DiGraph, CDiGraph

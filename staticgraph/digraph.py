@@ -1,5 +1,5 @@
 """
-Space efficient Multi Directed Graph implementation
+Space efficient Directed Graph implementation
 """
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
@@ -15,9 +15,9 @@ import numpy as np
 # Base data type
 DTYPE = np.uint32
 
-class MultiDiGraphBase(object):
+class DiGraphBase(object):
     """
-    Base class for MultiDiGraph and CMultiDiGraph
+    Base class for DiGraph and CDiGraph
 
     Abstract class; Don't use directly.
     """
@@ -108,13 +108,13 @@ class MultiDiGraphBase(object):
 
         return sum(1 for vv in self.successors(u) if v == vv)
 
-class MultiDiGraph(MultiDiGraphBase):
+class DiGraph(DiGraphBase):
     """
-    MultiDiGraph(n_nodes)
+    DiGraph(n_nodes)
     """
 
     def __init__(self, n_nodes):
-        super(MultiDiGraph, self).__init__()
+        super(DiGraph, self).__init__()
 
         self.pred = np.empty(n_nodes, dtype=object)
         self.succ = np.empty(n_nodes, dtype=object)
@@ -155,13 +155,13 @@ class MultiDiGraph(MultiDiGraphBase):
             self.succ[u].append(v)
             self.n_arcs += 1
 
-class CMultiDiGraph(MultiDiGraphBase):
+class CDiGraph(DiGraphBase):
     """
     CompactDiGraph(store_dir, [G])
     """
 
     def __init__(self, store_dir, G=None):
-        super(CMultiDiGraph, self).__init__()
+        super(CDiGraph, self).__init__()
 
         self.p_indptr  = None
         self.p_indices = None

@@ -9,7 +9,7 @@ import tempfile
 from random import randint
 from collections import Counter
 
-from staticgraph import digraph
+from staticgraph import DiGraph, CDiGraph
 
 G, H, I = None, None, None
 ARC_GEN = None
@@ -25,7 +25,7 @@ def setup_module(module):
     node_reserve = 100
     arc_reserve = 10000
 
-    G = digraph.MultiDiGraph(node_reserve)
+    G = DiGraph(node_reserve)
 
     ARC_GEN = []
     for _ in xrange(arc_reserve):
@@ -36,8 +36,8 @@ def setup_module(module):
     G.add_arcs_from(ARC_GEN)
 
     STORE_DIR = tempfile.mkdtemp()
-    H = digraph.CMultiDiGraph(STORE_DIR, G)
-    I = digraph.CMultiDiGraph(STORE_DIR)
+    H = CDiGraph(STORE_DIR, G)
+    I = CDiGraph(STORE_DIR)
 
 def teardown_module(module):
     """
