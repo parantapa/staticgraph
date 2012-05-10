@@ -3,6 +3,7 @@ from staticgraph.digraph import load
 try:
     from staticgraph.cDigraph import make
 except ImportError:
-    print "Failed to import fast version"
+    from warnings import warn
 
+    warn("using slower version of make ...")
     from staticgraph.digraph import make

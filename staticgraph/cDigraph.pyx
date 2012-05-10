@@ -8,6 +8,7 @@ __version__ = "0.1"
 import os
 from os.path import join, exists, isdir
 import cPickle as pk
+from itertools import islice
 
 import numpy as np
 DTYPE   = np.uint32
@@ -51,10 +52,8 @@ def make(object store_dir, size_t n_nodes, size_t n_arcs, object iterable):
     p_head.fill(invalid)
     s_head.fill(invalid)
 
-    iterable = iter(iterable)
-    for i in xrange(n_arcs):
-        u, v = next(iterable)
-
+    i = 0
+    for u, v in islice(iterable, n_arcs):
         tmp = p_head[v]
         p_data[i] = u
         p_next[i] = tmp
@@ -64,6 +63,9 @@ def make(object store_dir, size_t n_nodes, size_t n_arcs, object iterable):
         s_data[i] = v
         s_next[i] = tmp
         s_head[u] = i
+
+        i += 1
+    n_arcs = i
 
     # The final data is stored using mmap array
     if not exists(store_dir):
