@@ -72,13 +72,17 @@ class Graph(object):
 
         return xrange(self.n_nodes)
 
-    def edges(self):
+    def edges(self, bothways=True):
         """
         Return an iterable that yields the edges of the graph
+
+        If bothways is True return (a, b) along with (b, a).
+        NOTE: if bothways is False, self loops are not returned.
         """
 
         return ((u, v) for u in self.nodes()
-                       for v in self.neighbors(u))
+                       for v in self.neighbors(u)
+                       if bothways or u < v)
 
     def has_node(self, u):
         """
@@ -100,7 +104,7 @@ def make(store_dir, n_nodes, n_edges, iterable, dtype=np.uint32):
     """
 
     assert np.iinfo(dtype).max > n_nodes
-    assert np.iinfo(dtype).max > n_edges
+    assert np.iinfo(dtype).max > 2 * n_edges
     invalid = np.iinfo(dtype).max
 
     # Load all the stuff into our own lists

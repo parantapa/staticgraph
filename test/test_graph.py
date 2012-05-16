@@ -65,7 +65,7 @@ def test_neighbors():
         b = list(H.neighbors(u))
         assert a == b
 
-def test_edges():
+def test_edges_bothways():
     """
     Test edges
     """
@@ -76,6 +76,26 @@ def test_edges():
 
     b = Counter(G.edges())
     c = Counter(H.edges())
+    assert a == b
+    assert b == c
+
+def test_edges_once():
+    """
+    Test edges
+    """
+
+    a = Counter()
+    for u, v in EDGE_GEN:
+        if u < v:
+            a[u, v] += 1
+        elif v < u:
+            a[v, u] += 1
+        else:
+            # self loops are ignored in this case
+            pass
+
+    b = Counter(G.edges(False))
+    c = Counter(H.edges(False))
     assert a == b
     assert b == c
 

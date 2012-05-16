@@ -34,7 +34,7 @@ def make(object store_dir, size_t n_nodes, size_t n_edges, object iterable):
         np.ndarray[DTYPE_t, ndim=1] indices
 
     assert np.iinfo(DTYPE).max > n_nodes
-    assert np.iinfo(DTYPE).max > n_edges
+    assert np.iinfo(DTYPE).max > 2 * n_edges
     invalid = np.iinfo(DTYPE).max
 
     # Load all the stuff into our own lists

@@ -13,7 +13,7 @@ ext_modules = [
 packages = ["staticgraph"]
 
 setup(name = "StaticGraph",
-      version = "0.8a",
+      version = "0.9a",
       packages = packages,
       ext_modules = ext_modules,
       cmdclass = {'build_ext': build_ext}
