@@ -13,6 +13,7 @@ from itertools import islice
 import numpy as np
 DTYPE   = np.uint32
 
+cimport cython
 cimport numpy as np
 ctypedef np.uint32_t DTYPE_t
 
@@ -79,26 +80,27 @@ def make(object store_dir, size_t n_nodes, size_t n_arcs, object iterable):
     s_indptr  = mmap("s_indptr.dat", n_nodes + 1)
     s_indices = mmap("s_indices.dat", n_arcs)
 
-    # Copy stuff into the mmapped arrays
-    p_indptr[0] = 0
-    i = 0
-    for v in xrange(n_nodes):
-        j = p_head[v]
-        while j != invalid:
-            p_indices[i] = p_data[j]
-            j = p_next[j]
-            i += 1
-        p_indptr[v + 1] = i
+    with cython.boundscheck(False):
+        # Copy stuff into the mmapped arrays
+        p_indptr[0] = 0
+        i = 0
+        for v in xrange(n_nodes):
+            j = p_head[v]
+            while j != invalid:
+                p_indices[i] = p_data[j]
+                j = p_next[j]
+                i += 1
+            p_indptr[v + 1] = i
 
-    s_indptr[0] = 0
-    i = 0
-    for u in xrange(n_nodes):
-        j = s_head[u]
-        while j != invalid:
-            s_indices[i] = s_data[j]
-            j = s_next[j]
-            i += 1
-        s_indptr[u + 1] = i
+        s_indptr[0] = 0
+        i = 0
+        for u in xrange(n_nodes):
+            j = s_head[u]
+            while j != invalid:
+                s_indices[i] = s_data[j]
+                j = s_next[j]
+                i += 1
+            s_indptr[u + 1] = i
 
     # Make sure stuff is saved so others can read
     with open(join(store_dir, "base.pickle"), "wb") as fobj:

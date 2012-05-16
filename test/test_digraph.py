@@ -1,5 +1,5 @@
 """
-Tests for static graph modules
+Tests for directed graph
 """
 
 from __future__ import division
@@ -9,7 +9,7 @@ import tempfile
 from random import randint
 from collections import Counter
 
-from staticgraph import make, load
+from staticgraph import make_digraph, load_digraph
 
 G, H = None, None
 ARC_GEN = None
@@ -32,8 +32,8 @@ def setup_module(module):
         ARC_GEN.append((u, v))
 
     STORE_DIR = tempfile.mkdtemp()
-    G = make(STORE_DIR, n_nodes, n_arcs, ARC_GEN)
-    H = load(STORE_DIR)
+    G = make_digraph(STORE_DIR, n_nodes, n_arcs, ARC_GEN)
+    H = load_digraph(STORE_DIR)
 
 def teardown_module(module):
     """
@@ -49,7 +49,7 @@ def teardown_module(module):
 
 def test_indegree():
     """
-    Test in degree integrity
+    Test indegree integrity
     """
 
     for u in G.nodes():
@@ -59,7 +59,7 @@ def test_indegree():
 
 def test_outdegree():
     """
-    Test in degree integrity
+    Test outdegree integrity
     """
 
     for u in G.nodes():
@@ -87,9 +87,9 @@ def test_predecessors():
         b = list(H.predecessors(u))
         assert a == b
 
-def test_edges_forward():
+def test_arcs_forward():
     """
-    Test edges generated using successors
+    Test arcs generated using successors
     """
 
     a = Counter(ARC_GEN)
@@ -98,9 +98,9 @@ def test_edges_forward():
     assert a == b
     assert b == c
 
-def test_edges_backward():
+def test_arcs_backward():
     """
-    Test edges generated using predecessors
+    Test arcs generated using predecessors
     """
 
     a = Counter(ARC_GEN)
