@@ -121,7 +121,7 @@ class DiGraph(object):
 
         return sum(1 for vv in self.successors(u) if v == vv)
 
-def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
+def make(store_dir, n_nodes, n_arcs, iterable, simple=False, dtype=np.uint32):
     """
     Make a DiGraph
     """
@@ -143,6 +143,10 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
 
     i = 0
     for u, v in islice(iterable, n_arcs):
+        # Remove self loops
+        if simple and u == v:
+            continue
+
         tmp = p_head[v]
         p_data[i] = u
         p_next[i] = tmp
@@ -179,6 +183,17 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
             i += 1
         p_indptr[v + 1] = i
 
+        # Remove duplicates
+        if simple:
+            start = p_indptr[v]
+            end   = p_indptr[v + 1]
+            uniq  = np.unique(p_indices[start:end])
+            end   = start + len(uniq)
+
+            p_indices[start:end] = uniq
+            p_indptr[v + 1] = end
+            i = end
+        
     s_indptr[0] = 0
     i = 0
     for u in xrange(n_nodes):
@@ -188,6 +203,20 @@ def make(store_dir, n_nodes, n_arcs, iterable, dtype=np.uint32):
             j = s_next[j]
             i += 1
         s_indptr[u + 1] = i
+
+        # Remove duplicates
+        if simple:
+            start = s_indptr[u]
+            end   = s_indptr[u + 1]
+            uniq  = np.unique(s_indices[start:end])
+            end   = start + len(uniq)
+
+            s_indices[start:end] = uniq
+            s_indptr[u + 1] = end
+            i = end
+
+    if simple:
+        n_arcs = p_indptr[n_nodes]
 
     # Make sure stuff is saved so others can read
     with open(join(store_dir, "base.pickle"), "wb") as fobj:
@@ -222,4 +251,3 @@ def load(store_dir):
 
     G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
     return G
-
