@@ -11,6 +11,11 @@ import cPickle as pk
 from itertools import islice
 
 import numpy as np
+NTYPE = np.uint32
+ATYPE = np.uint64
+
+NEND = np.iinfo(NTYPE).max
+AEND = np.iinfo(ATYPE).max
 
 class DiGraph(object):
     """
@@ -121,111 +126,101 @@ class DiGraph(object):
 
         return sum(1 for vv in self.successors(u) if v == vv)
 
-def make(store_dir, n_nodes, n_arcs, iterable, simple=False, dtype=np.uint32):
+def _make_el(n_arcs, iterable):
+    """
+    Make the sorted edge list
+    """
+
+    # Allocate memory
+    a = np.empty((n_arcs, 2), dtype=NTYPE)
+
+    # Load all arcs into memory
+    i = 0
+    for u, v in islice(iterable, n_arcs):
+        a[i, 0] = u
+        a[i, 1] = v
+        i += 1
+    n_arcs = i
+
+    # Create a view for sorting
+    dt = [('c0', NTYPE), ('c1', NTYPE)]
+    b = a.ravel().view(dt)
+
+    # Sort the array
+    b.sort(order=['c0','c1'])
+
+    return n_arcs, a
+
+def _make_graph(indptr, indices, n_nodes, n_arcs, el, simple, fwd):
+    """
+    Make compact representation of the graph
+    """
+
+    x, y = (0, 1) if fwd else (1, 0)
+
+    indptr[0] = 0
+    i, j, k = 0, 0, 0
+    while i < n_nodes:
+        while j < n_arcs and el[j, x] == i:
+            # Skip self loops
+            if simple and el[j, y] == i:
+                j += 1
+                continue
+
+            # Skip parallel edges
+            if simple and k != 0 and el[j, y] == indices[k - 1]:
+                j += 1
+                continue
+
+            indices[k] = el[j, y]
+            k += 1
+            j += 1
+
+        indptr[i + 1] = k
+        i += 1
+
+            
+def make(store_dir, n_nodes, n_arcs, iterable, simple=False):
     """
     Make a DiGraph
     """
 
-    assert np.iinfo(dtype).max > n_nodes
-    assert np.iinfo(dtype).max > n_arcs
-    invalid = np.iinfo(dtype).max
+    assert NEND > n_nodes
+    assert AEND > n_arcs
 
-    # Load all the stuff into our own lists
-    p_head = np.empty(n_nodes, dtype=dtype)
-    p_next = np.empty(n_arcs, dtype=dtype)
-    p_data = np.empty(n_arcs, dtype=dtype)
-    s_head = np.empty(n_nodes, dtype=dtype)
-    s_next = np.empty(n_arcs, dtype=dtype)
-    s_data = np.empty(n_arcs, dtype=dtype)
+    # Load the edgelist to memory
+    n_arcs, el = _make_el(n_arcs, iterable)
 
-    p_head.fill(invalid)
-    s_head.fill(invalid)
+    if store_dir != ":memory:":
+        # The final data is stored using mmap array
+        if not exists(store_dir):
+            os.mkdir(store_dir, 0755)
 
-    i = 0
-    for u, v in islice(iterable, n_arcs):
-        # Remove self loops
-        if simple and u == v:
-            continue
+        mmap = lambda x, y, z : np.memmap(join(store_dir, x), mode="w+",
+                                          shape=y, dtype=z)
+    else:
+        mmap = lambda _, y, z : np.empty(shape=y, dtype=z)
 
-        tmp = p_head[v]
-        p_data[i] = u
-        p_next[i] = tmp
-        p_head[v] = i
-
-        tmp = s_head[u]
-        s_data[i] = v
-        s_next[i] = tmp
-        s_head[u] = i
-
-        i += 1
-    n_arcs = i
-
-    # The final data is stored using mmap array
-    if not exists(store_dir):
-        os.mkdir(store_dir, 0755)
-
-    mmap = lambda x, y : np.memmap(join(store_dir, x), mode="w+",
-                                   dtype=dtype, shape=y)
-
-    p_indptr  = mmap("p_indptr.dat", n_nodes + 1)
-    p_indices = mmap("p_indices.dat", n_arcs)
-    s_indptr  = mmap("s_indptr.dat", n_nodes + 1)
-    s_indices = mmap("s_indices.dat", n_arcs)
+    p_indptr  = mmap("p_indptr.dat", n_nodes + 1, ATYPE)
+    p_indices = mmap("p_indices.dat", n_arcs, NTYPE)
+    s_indptr  = mmap("s_indptr.dat", n_nodes + 1, ATYPE)
+    s_indices = mmap("s_indices.dat", n_arcs, NTYPE)
 
     # Copy stuff into the mmapped arrays
-    p_indptr[0] = 0
-    i = 0
-    for v in xrange(n_nodes):
-        j = p_head[v]
-        while j != invalid:
-            p_indices[i] = p_data[j]
-            j = p_next[j]
-            i += 1
-        p_indptr[v + 1] = i
+    _make_graph(s_indptr, s_indices, n_nodes, n_arcs, el, simple, True)
+    _make_graph(p_indptr, s_indices, n_nodes, n_arcs, el, simple, False)
 
-        # Remove duplicates
-        if simple:
-            start = p_indptr[v]
-            end   = p_indptr[v + 1]
-            uniq  = np.unique(p_indices[start:end])
-            end   = start + len(uniq)
+    n_arcs = s_indptr[n_nodes]
 
-            p_indices[start:end] = uniq
-            p_indptr[v + 1] = end
-            i = end
-        
-    s_indptr[0] = 0
-    i = 0
-    for u in xrange(n_nodes):
-        j = s_head[u]
-        while j != invalid:
-            s_indices[i] = s_data[j]
-            j = s_next[j]
-            i += 1
-        s_indptr[u + 1] = i
+    if store_dir != ":memory:":
+        # Make sure stuff is saved so others can read
+        with open(join(store_dir, "base.pickle"), "wb") as fobj:
+            pk.dump((n_nodes, n_arcs), fobj, -1)
 
-        # Remove duplicates
-        if simple:
-            start = s_indptr[u]
-            end   = s_indptr[u + 1]
-            uniq  = np.unique(s_indices[start:end])
-            end   = start + len(uniq)
-
-            s_indices[start:end] = uniq
-            s_indptr[u + 1] = end
-            i = end
-
-    if simple:
-        n_arcs = p_indptr[n_nodes]
-
-    # Make sure stuff is saved so others can read
-    with open(join(store_dir, "base.pickle"), "wb") as fobj:
-        pk.dump((n_nodes, n_arcs, dtype), fobj, -1)
-
-    p_indptr.flush()
-    p_indices.flush()
-    s_indptr.flush()
-    s_indices.flush()
+        p_indptr.flush()
+        p_indices.flush()
+        s_indptr.flush()
+        s_indices.flush()
 
     # Finally create our graph
     G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
@@ -239,15 +234,15 @@ def load(store_dir):
     assert isdir(store_dir)
 
     with open(join(store_dir, "base.pickle")) as fobj:
-        n_nodes, n_arcs, dtype = pk.load(fobj)
+        n_nodes, n_arcs = pk.load(fobj)
 
-    mmap = lambda x, y : np.memmap(join(store_dir, x), mode="r",
-                                   dtype=dtype, shape=y)
+    mmap = lambda x, y, z : np.memmap(join(store_dir, x), mode="r",
+                                      shape=y, dtype=z)
 
-    p_indptr  = mmap("p_indptr.dat", n_nodes + 1)
-    p_indices = mmap("p_indices.dat", n_arcs)
-    s_indptr  = mmap("s_indptr.dat", n_nodes + 1)
-    s_indices = mmap("s_indices.dat", n_arcs)
+    p_indptr  = mmap("p_indptr.dat", n_nodes + 1, ATYPE)
+    p_indices = mmap("p_indices.dat", n_arcs, NTYPE)
+    s_indptr  = mmap("s_indptr.dat", n_nodes + 1, ATYPE)
+    s_indices = mmap("s_indices.dat", n_arcs, NTYPE)
 
     G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
     return G
