@@ -1,7 +1,9 @@
 from warnings import warn
 
-from staticgraph.make_digraph import make as make_digraph
 from staticgraph.digraph import load as load_digraph
+from staticgraph.make_digraph import make as make_digraph
+from staticgraph.manip_digraph import merge as merge_digraph
+from staticgraph.manip_digraph import subgraph as sub_digraph
 
 try:
     from staticgraph.cGraph import make as make_graph
