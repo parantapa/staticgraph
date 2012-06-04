@@ -7,7 +7,6 @@ __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 import os
 from os.path import join, exists
 import cPickle as pk
-from itertools import islice
 
 import numpy as np
 
@@ -32,7 +31,10 @@ def _make_el(size_t n_arcs, object iterable):
 
     # Load all arcs into memory
     i = 0
-    for u, v in islice(iterable, n_arcs):
+    for u, v in iterable:
+        if i == n_arcs:
+            break
+
         with cython.boundscheck(False):
             el[i, 0] = u
             el[i, 1] = v
