@@ -20,7 +20,7 @@ from staticgraph.digraph import DiGraph, NTYPE, ATYPE
 
 def _make_el(size_t n_arcs, object iterable):
     """
-    Make the sorted edge list
+    Load edge list to memory
     """
 
     cdef:
@@ -63,33 +63,34 @@ def _make_graph(np.ndarray[ATYPE_t] indptr,
 
     u, v = (0, 1) if fwd else (1, 0)
 
-    # Create a view for sorting
+    # Sort the edge list using a record view
     dt = [(str(u), NTYPE), (str(v), NTYPE)]
     b = el.ravel().view(dt)
     b.sort(order=['0','1'])
 
     # Copy the stuff into graph struct
-    indptr[0] = 0
-    i, j, k = 0, 0, 0
-    while i < n_nodes:
-        while j < n_arcs and el[j, u] == i:
-            # Skip self loops
-            if simple and el[j, v] == i:
+    with cython.boundscheck(False):
+        indptr[0] = 0
+        i, j, k = 0, 0, 0
+        while i < n_nodes:
+            while j < n_arcs and el[j, u] == i:
+                # Skip self loops
+                if simple and el[j, v] == i:
+                    j += 1
+                    continue
+
+                # Skip parallel edges
+                if simple and k != 0 and el[j, v] == indices[k - 1]:
+                    j += 1
+                    continue
+
+                # Copy the edge
+                indices[k] = el[j, v]
+                k += 1
                 j += 1
-                continue
 
-            # Skip parallel edges
-            if simple and k != 0 and el[j, v] == indices[k - 1]:
-                j += 1
-                continue
-
-            # Copy the edge
-            indices[k] = el[j, v]
-            k += 1
-            j += 1
-
-        indptr[i + 1] = k
-        i += 1
+            indptr[i + 1] = k
+            i += 1
 
 def make(store_dir, n_nodes, n_arcs, iterable, simple=False):
     """
