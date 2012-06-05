@@ -10,10 +10,10 @@ ext_modules = [
               include_dirs=[get_include()])
     ]
 
-packages = ["staticgraph"]
+packages = ["staticgraph", "staticgraph.algorithms"]
 
 setup(name = "StaticGraph",
-      version = "0.50a",
+      version = "0.53a",
       packages = packages,
       ext_modules = ext_modules,
       cmdclass = {'build_ext': build_ext}

@@ -66,9 +66,8 @@ def _make_graph(np.ndarray[ATYPE_t] indptr,
     u, v = (0, 1) if fwd else (1, 0)
 
     # Sort the edge list using a record view
-    dt = [(str(u), NTYPE), (str(v), NTYPE)]
-    b = el.ravel().view(dt)
-    b.sort(order=['0','1'])
+    ind = np.lexsort((el[:,v], el[:,u]))
+    el = el[ind]
 
     # Copy the stuff into graph struct
     with cython.boundscheck(False):

@@ -5,7 +5,7 @@ from staticgraph.make_digraph import make as make_digraph
 from staticgraph.manip_digraph import merge as merge_digraph
 from staticgraph.manip_digraph import subgraph as sub_digraph
 
-from staticgraph.link_analysis import hits
+from staticgraph.algorithms.link_analysis import hits
 
 # The following is really curft code that I havent had chance to update
 try:
