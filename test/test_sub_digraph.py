@@ -31,11 +31,11 @@ def setup_module(module):
     dups = arcs[::2]
     arcs.extend(dups)
 
-    G0 = make_digraph(":memory:", n_nodes, len(arcs), arcs)
+    G0 = make_digraph(n_nodes, len(arcs), arcs)
     N1 = set(sample(xrange(n_nodes), int(n_nodes / 2)))
-    G1 = sub_digraph(":memory:", G0, N1)
+    G1 = sub_digraph(G0, N1)
     N2 = set(sample(xrange(n_nodes), int(n_nodes / 2)))
-    G2 = sub_digraph(":memory:", G0, N2, simple=True)
+    G2 = sub_digraph(G0, N2, simple=True)
 
 def test_indegree():
     """

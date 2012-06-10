@@ -8,7 +8,7 @@ from itertools import chain
 
 from staticgraph import make_digraph
 
-def merge(store_dir, G0, G1, simple=False):
+def merge(G0, G1, simple=False, store=None):
     """
     Make a merged graph form two other digraphs
     """
@@ -19,9 +19,9 @@ def merge(store_dir, G0, G1, simple=False):
     n_arcs  = G0.n_arcs + G1.n_arcs
     iterable = chain(G0.arcs(), G1.arcs())
 
-    return make_digraph(store_dir, n_nodes, n_arcs, iterable, simple)
+    return make_digraph(n_nodes, n_arcs, iterable, simple, store)
 
-def subgraph(store_dir, G, nodes, simple=False):
+def subgraph(G, nodes, simple=False, store=None):
     """
     Make a subgraph from the given graph
     """
@@ -34,5 +34,5 @@ def subgraph(store_dir, G, nodes, simple=False):
                        for v in G.successors(u)
                        if v in nodes)
 
-    return make_digraph(store_dir, n_nodes, n_arcs, iterable, simple)
+    return make_digraph(n_nodes, n_arcs, iterable, simple, store)
 

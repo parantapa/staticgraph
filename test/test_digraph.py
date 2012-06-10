@@ -36,10 +36,10 @@ def setup_module(_):
     ARC_GEN.extend(dups)
 
     STORE_DIR = tempfile.mkdtemp()
-    G0 = make_digraph(STORE_DIR, n_nodes, len(ARC_GEN), ARC_GEN)
+    G0 = make_digraph(n_nodes, len(ARC_GEN), ARC_GEN, store=STORE_DIR)
     H0 = load_digraph(STORE_DIR)
 
-    G1 = make_digraph(":memory:", n_nodes, len(ARC_GEN), ARC_GEN, simple=True)
+    G1 = make_digraph(n_nodes, len(ARC_GEN), ARC_GEN, simple=True)
 
 def teardown_module(_):
     """
