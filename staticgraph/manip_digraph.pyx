@@ -148,6 +148,37 @@ def merge(A, B, simple=False, store=None):
     G = DiGraph(p_indptr, p_indices, s_indptr, s_indices, n_nodes, n_arcs)
     return G
 
+cdef void(np.ndarray[ATYPE_t] indptrA,
+          np.ndarray[ATYPE_t] indptrB,
+          np.ndarray[NTYPE_t] indicesA,
+          np.ndarray[NTYPE_t] indicesB,
+          np.ndarray[NTYPE_t] nlist
+          np.ndarray[int8_t] nset,
+          NTYPE_t n_nodes,
+          bint simple):
+
+    cdef:
+        NTYPE_t u, v
+        ATYPE_t i, iend, j, n, nend
+
+    nend = nlist.shape[0]
+    for n in range(nend):
+        u = nlist[n]
+        for i in range(indptrA[u], indptrA[u + 1]):
+            v = indicesA[i]
+
+            if simple and u == v:
+                continue
+
+            if simple and j != 0 and indicesB[j - 1] == v:
+                continue
+
+            if not nset[v]:
+                continue
+
+            indicesB[j] = v
+            j += 1
+
 def subgraph(G, nodes, simple=False, store=None):
     """
     Make a subgraph from the given graph
