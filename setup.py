@@ -6,10 +6,10 @@ from numpy import get_include
 ext_modules = [
     Extension("staticgraph.make_digraph", ["staticgraph/make_digraph.pyx"],
               include_dirs=[get_include()]),
-    Extension("staticgraph.manip_digraph", ["staticgraph/manip_digraph.pyx"],
+    Extension("staticgraph.merge_digraph", ["staticgraph/merge_digraph.pyx"],
               include_dirs=[get_include()]),
-    Extension("staticgraph.cGraph", ["staticgraph/cGraph.pyx"],
-              include_dirs=[get_include()])
+    Extension("staticgraph.sub_digraph", ["staticgraph/sub_digraph.pyx"],
+              include_dirs=[get_include()]),
     ]
 
 packages = ["staticgraph", "staticgraph.algorithms"]
