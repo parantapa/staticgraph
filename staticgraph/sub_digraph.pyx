@@ -1,7 +1,7 @@
-#cython: wraparound=False
-#cython: boundscheck=False
+# #cython: wraparound=False
+# #cython: boundscheck=False
 """
-Merge two digraphs into one
+Create a subgraph from an existing graph
 """
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
@@ -15,94 +15,82 @@ import numpy as np
 cimport numpy as np
 
 # Merge two compressed arrays into one
-cdef void merge_es(np.ndarray[ATYPE_t] indptrA,
-                   np.ndarray[ATYPE_t] indptrB,
-                   np.ndarray[ATYPE_t] indptrC,
-                   np.ndarray[NTYPE_t] indicesA,
-                   np.ndarray[NTYPE_t] indicesB,
-                   np.ndarray[NTYPE_t] indicesC,
-                   NTYPE_t n_nodes,
-                   bint simple):
+cdef void subset_es(np.ndarray[ATYPE_t] indptrA,
+                    np.ndarray[ATYPE_t] indptrB,
+                    np.ndarray[NTYPE_t] indicesA,
+                    np.ndarray[NTYPE_t] indicesB,
+                    np.ndarray[np.int8_t] nset,
+                    bint simple):
 
     cdef:
-        NTYPE_t u, v
-        ATYPE_t i, j, k, iend, jend
+        NTYPE_t n_nodes, u, v
+        ATYPE_t i, iend, j
 
-    k = 0
-    indptrC[0] = 0
+    n_nodes = indptrA.shape[0] - 1
+
+    j = 0
+    indptrB[0] = 0
     for u in range(n_nodes):
-        i = indptrA[u]
-        j = indptrB[u]
-        iend = indptrA[u + 1]
-        jend = indptrB[u + 1]
+        if nset[u]:
+            i    = indptrA[u]
+            iend = indptrA[u + 1]
 
-        # While we have nodes in both lsits
-        while i < iend and j < jend:
-            if indicesA[i] < indicesB[j]:
+            while i < iend:
                 v = indicesA[i]
                 i += 1
-            else:
-                v = indicesB[j]
+
+                if simple and v == u:
+                    continue
+                if simple and j != 0 and indicesB[j - 1] == v:
+                    continue
+                if not nset[v]:
+                    continue
+
+                indicesB[j] = v
                 j += 1
 
-            if simple and v == u:
-                continue
-            if simple and k != 0 and indicesC[k - 1] == v:
-                continue
-
-            indicesC[k] = v
-            k += 1
-
-        # If list B has finished copy everything from A
-        while i < iend:
-            v = indicesA[i]
-            i += 1
-            
-            if simple and v == u:
-                continue
-            if simple and k != 0 and indicesC[k - 1] == v:
-                continue
-
-            indicesC[k] = v
-            k += 1
-
-        # If list A is finished copy everything from B
-        while j < jend:
-            v = indicesB[j]
-            j += 1
-            
-            if simple and v == u:
-                continue
-            if simple and k != 0 and indicesC[k - 1] == v:
-                continue
-
-            indicesC[k] = v
-            k += 1
-
         # Note end of current list
-        indptrC[u + 1] = k
+        indptrB[u + 1] = j
 
-def merge(A, B, simple=False, store=None):
+cdef ATYPE_t arc_max(np.ndarray[ATYPE_t] indptr,
+                     np.ndarray[NTYPE_t] nodes):
+
+    cdef:
+        ATYPE_t i, n, max_arcs
+        NTYPE_t u
+
+    max_arcs = 0
+    n = nodes.shape[0]
+    for i in range(n):
+        u = nodes[i]
+        max_arcs += indptr[u + 1] - indptr[u]
+
+    return max_arcs
+
+def sub(A, nodes, simple=False, store=None):
     """
-    Make a merged graph form two other digraphs
+    Create a subgraph of A using the given subset of nodes
     """
 
-    assert A.n_nodes == B.n_nodes
-    
+    # Create a numpy list and set of nodes
+    nodes = np.fromiter(nodes, dtype=NTYPE, count=len(nodes))
+    nset  = np.zeros(A.n_nodes, dtype=np.int8)
+    nset[nodes] = 1
+
     n_nodes = A.n_nodes
-    n_arcs  = A.n_arcs + B.n_arcs
+    n_arcs  = arc_max(A.p_indptr, nodes)
 
-    # Allocate enough space
+    # Allocate the graph
     G = alloc_digraph(n_nodes, n_arcs, store)
 
-    # Merge individual compact arrays
-    merge_es(A.p_indptr, B.p_indptr, G.p_indptr,
-             A.p_indices, B.p_indices, G.p_indices,
-             n_nodes, simple)
+    # Find edge subset
+    subset_es(A.p_indptr, G.p_indptr,
+              A.p_indices, G.p_indices,
+              nset, simple)
 
-    merge_es(A.s_indptr, B.s_indptr, G.s_indptr,
-             A.s_indices, B.s_indices, G.s_indices,
-             n_nodes, simple)
+    subset_es(A.s_indptr, G.s_indptr,
+              A.s_indices, G.s_indices,
+              nset, simple)
 
     # Re set the number of arcs
     G.n_arcs = G.s_indptr[G.n_nodes]
@@ -111,3 +99,4 @@ def merge(A, B, simple=False, store=None):
     flush_digraph(G, store)
 
     return G
+
