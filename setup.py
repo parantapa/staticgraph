@@ -10,12 +10,14 @@ ext_modules = [
               include_dirs=[get_include()]),
     Extension("staticgraph.sub_digraph", ["staticgraph/sub_digraph.pyx"],
               include_dirs=[get_include()]),
+    Extension("staticgraph.algorithms.link_analysis", ["staticgraph/algorithms/link_analysis.pyx"],
+              include_dirs=[get_include()]),
     ]
 
 packages = ["staticgraph", "staticgraph.algorithms"]
 
 setup(name = "StaticGraph",
-      version = "0.60a",
+      version = "0.61a",
       packages = packages,
       ext_modules = ext_modules,
       cmdclass = {'build_ext': build_ext}
