@@ -143,3 +143,17 @@ def test_simple_all_arcs():
     assert a == b
     assert a == c
 
+def test_bug_parallel_edge_check():
+    """
+    Bug invalidly removes nodes in parallel edge check
+    """
+
+    arcs = [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+    A = make_digraph(6, len(arcs), arcs, simple=True)
+
+    a = set((u, v) for u, v in arcs if u != v)
+    b = set(A.arcs())
+    c = set(A.arcs(False))
+    assert a == b
+    assert a == c
+

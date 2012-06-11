@@ -47,7 +47,7 @@ cdef void merge_es(np.ndarray[ATYPE_t] indptrA,
 
             if simple and v == u:
                 continue
-            if simple and k != 0 and indicesC[k - 1] == v:
+            if simple and k != indptrC[u] and indicesC[k - 1] == v:
                 continue
 
             indicesC[k] = v

@@ -107,7 +107,7 @@ def compact_es(np.ndarray[ATYPE_t] indptr,
                 j += 1
                 continue
             # Skip parallel edges
-            if simple and k != 0 and v == indices[k - 1]:
+            if simple and k != indptr[i] and v == indices[k - 1]:
                 j += 1
                 continue
             

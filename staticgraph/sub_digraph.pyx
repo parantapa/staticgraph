@@ -41,7 +41,7 @@ cdef void subset_es(np.ndarray[ATYPE_t] indptrA,
 
                 if simple and v == u:
                     continue
-                if simple and j != 0 and indicesB[j - 1] == v:
+                if simple and j != indptrB[u] and indicesB[j - 1] == v:
                     continue
                 if not nset[v]:
                     continue
