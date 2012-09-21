@@ -4,22 +4,31 @@ Tests for fast directed graph
 
 from __future__ import division
 
+__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
+
 import networkx as nx
+import staticgraph.digraph as dg
 from numpy.testing import assert_equal
 
-import staticgraph.digraph as dg
-
-def pytest_funcarg__testgraph(request):
+def pytest_generate_tests(metafunc):
     """
-    Create the testgraph tuple
+    Generate the arguments for test funcs
     """
 
-    if not hasattr(request.module, "_myargs"):
-        a = nx.gnp_random_graph(100, 0.2, directed=True)
+    if "testgraph" in metafunc.funcargnames:
+        testgraphs = []
+
+        # 100 vertex random graph
+        a = nx.gnp_random_graph(100, 0.1, directed=True)
         b = dg.make(a.order(), a.edges_iter(), a.size())
-        request.module.myargs = (a, b)
+        testgraphs.append((a, b))
 
-    return request.module.myargs
+        # 100 vertex random graph with parallel edges
+        a = nx.gnp_random_graph(100, 0.1, directed=True)
+        b = dg.make(a.order(), a.edges() + a.edges(), a.size() * 2)
+        testgraphs.append((a, b))
+
+        metafunc.parametrize("testgraph", testgraphs)
 
 def test_nodes(testgraph):
     """
