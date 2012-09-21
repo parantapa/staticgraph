@@ -4,7 +4,8 @@ Tests for link analysis functions
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 
-from staticgraph import make_digraph, hits, pagerank
+import staticgraph.digraph as dg
+from staticgraph import hits, pagerank
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -18,7 +19,7 @@ def test_hits_5_path_graph():
     known_auth = np.array([0.0, 0.25, 0.25, 0.25, 0.25])
     known_hub  = np.array([0.25, 0.25, 0.25, 0.25, 0.0])
 
-    G = make_digraph(5, len(arcs), arcs)
+    G = dg.make(5, arcs, len(arcs))
     hub, auth = hits(G)
 
     assert_almost_equal(known_auth, auth, decimal=5)
@@ -36,7 +37,7 @@ def test_hits_5_complete_graph():
     known_auth = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
     known_hub  = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
 
-    G = make_digraph(5, len(arcs), arcs)
+    G = dg.make(5, arcs, len(arcs))
     hub, auth = hits(G)
     
     assert_almost_equal(known_auth, auth, decimal=5)
@@ -51,7 +52,7 @@ def test_hits_5_path_graph_dangle():
     known_hub  = np.array([0.25, 0.25, 0.25, 0.25, 0, 0, 0, 0])
     known_auth = np.array([0, 0.25, 0.25, 0.25, 0.25, 0, 0, 0])
 
-    G = make_digraph(8, len(arcs), arcs)
+    G = dg.make(8, arcs, len(arcs))
     hub, auth = hits(G)
 
     assert_almost_equal(known_auth, auth, decimal=5)
@@ -69,7 +70,7 @@ def test_hits_5_complete_graph_dangle():
     known_hub  = np.array([0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0])
     known_auth = np.array([0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0])
 
-    G = make_digraph(8, len(arcs), arcs)
+    G = dg.make(8, arcs, len(arcs))
     hub, auth = hits(G)
     
     assert_almost_equal(known_auth, auth, decimal=5)
@@ -87,7 +88,7 @@ def test_pagerank_5_path_graph():
                             0.2587017434248718,
                             0.30108009514224215])
 
-    G = make_digraph(5, len(arcs), arcs)
+    G = dg.make(5, arcs, len(arcs))
     score = pagerank(G)
 
     assert_almost_equal(known_score, score, decimal=5)
@@ -103,7 +104,7 @@ def test_pagerank_5_complete_graph():
 
     known_score = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
 
-    G = make_digraph(5, len(arcs), arcs)
+    G = dg.make(5, arcs, len(arcs))
     score = pagerank(G)
     
     assert_almost_equal(known_score, score, decimal=5)
@@ -124,7 +125,7 @@ def test_pagerank_5_path_graph_dangle():
                             0.06528371294784407])
 
 
-    G = make_digraph(8, len(arcs), arcs)
+    G = dg.make(8, arcs, len(arcs))
     score = pagerank(G)
 
     assert_almost_equal(known_score, score, decimal=5)
@@ -147,7 +148,7 @@ def test_pagerank_5_complete_graph_dangle():
                             0.027522936132638585,
                             0.027522936132638585])
 
-    G = make_digraph(8, len(arcs), arcs)
+    G = dg.make(8, arcs, len(arcs))
     score = pagerank(G)
 
     assert_almost_equal(known_score, score, decimal=5)

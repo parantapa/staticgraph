@@ -14,8 +14,6 @@ from staticgraph.types cimport *
 import numpy as np
 cimport numpy as np
 
-from libc.math cimport sqrt
-
 def hits(object G, size_t max_iter=20, double tol_err=1e-8):
     """
     Find hits hubs and authorities algorithm on the directed graph
