@@ -4,21 +4,15 @@ from Cython.Distutils import build_ext
 from numpy import get_include
 
 ext_modules = [
-    Extension("staticgraph.make_digraph", ["staticgraph/make_digraph.pyx"],
+    Extension("staticgraph._edgelist", ["staticgraph/_edgelist.pyx"],
               include_dirs=[get_include()]),
-    Extension("staticgraph.merge_digraph", ["staticgraph/merge_digraph.pyx"],
-              include_dirs=[get_include()]),
-    Extension("staticgraph.sub_digraph", ["staticgraph/sub_digraph.pyx"],
-              include_dirs=[get_include()]),
-    Extension("staticgraph.algorithms.link_analysis", ["staticgraph/algorithms/link_analysis.pyx"],
-              include_dirs=[get_include()]),
-    ]
+]
 
-packages = ["staticgraph", "staticgraph.algorithms"]
+packages = ["staticgraph"]
 
 setup(name = "StaticGraph",
-      version = "0.63a",
+      version = "0.1a",
       packages = packages,
       ext_modules = ext_modules,
       cmdclass = {'build_ext': build_ext}
-      )
+)

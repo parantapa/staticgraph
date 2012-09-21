@@ -1,159 +1,90 @@
 """
-Tests for directed graph
+Tests for fast directed graph
 """
 
 from __future__ import division
 
-import os
-import tempfile
-from random import randint
-from collections import Counter
+import networkx as nx
+from numpy.testing import assert_equal as assert_eq
 
-from staticgraph import make_digraph, load_digraph
+import staticgraph.digraph as dg
 
-G0, G1, H0 = None, None, None
-ARC_GEN = None
-STORE_DIR = None
-
-def setup_module(_):
+def pytest_funcarg__testgraph(request):
     """
-    Create the graphs
+    Create the testgraph tuple
     """
 
-    global G0, G1, H0, ARC_GEN, STORE_DIR
+    if not hasattr(request.module, "_myargs"):
+        a = nx.gnp_random_graph(100, 0.2, directed=True)
+        b = dg.make(a.order(), a.edges_iter(), a.size())
+        request.module.myargs = (a, b)
 
-    n_nodes = 100
-    n_arcs  = 10000
+    return request.module.myargs
 
-    ARC_GEN = []
-    for _ in xrange(n_arcs):
-        u = randint(0, n_nodes -1)
-        v = randint(0, n_nodes -1)
-        ARC_GEN.append((u, v))
-
-    # Make sure to add some duplicates
-    dups = ARC_GEN[::2]
-    ARC_GEN.extend(dups)
-
-    STORE_DIR = tempfile.mkdtemp()
-    G0 = make_digraph(n_nodes, len(ARC_GEN), ARC_GEN, store=STORE_DIR)
-    H0 = load_digraph(STORE_DIR)
-
-    G1 = make_digraph(n_nodes, len(ARC_GEN), ARC_GEN, simple=True)
-
-def teardown_module(_):
+def test_nodes(testgraph):
     """
-    Remove the created temporary directory
+    Test the nodes of the graph are same
     """
 
-    os.remove(os.path.join(STORE_DIR, "base.pickle"))
-    os.remove(os.path.join(STORE_DIR, "p_indptr.dat"))
-    os.remove(os.path.join(STORE_DIR, "p_indices.dat"))
-    os.remove(os.path.join(STORE_DIR, "s_indptr.dat"))
-    os.remove(os.path.join(STORE_DIR, "s_indices.dat"))
-    os.rmdir(STORE_DIR)
-
-def test_indegree():
-    """
-    Test indegree integrity
-    """
-
-    for u in G0.nodes():
-        a = G0.indegree(u)
-        b = H0.indegree(u)
-        assert a == b
-
-def test_outdegree():
-    """
-    Test outdegree integrity
-    """
-
-    for u in G0.nodes():
-        a = G0.outdegree(u)
-        b = H0.outdegree(u)
-        assert a == b
-
-def test_successors():
-    """
-    Test node successors
-    """
-
-    for u in G0.nodes():
-        a = list(G0.successors(u))
-        b = list(H0.successors(u))
-        assert a == b
-
-def test_predecessors():
-    """
-    Test node predecessors
-    """
-
-    for u in G0.nodes():
-        a = list(G0.predecessors(u))
-        b = list(H0.predecessors(u))
-        assert a == b
-
-def test_all_arcs():
-    """
-    Test arcs generated using successors
-    """
-
-    a = Counter(ARC_GEN)
-    b = Counter(G0.arcs())
-    c = Counter(H0.arcs())
-    d = Counter(G0.arcs(False))
-    e = Counter(H0.arcs(False))
+    a = sorted(testgraph[0].nodes_iter())
+    b = sorted(testgraph[1].nodes())
     assert a == b
-    assert b == c
-    assert c == d
-    assert d == e
 
-def test_simple_no_self_loops():
+def test_edges(testgraph):
     """
-    Test if the graph has self loops
+    Test the edges are the same
     """
 
-    for u, v in G1.arcs():
-        assert u != v
-
-    for u, v in G1.arcs(False):
-        assert u != v
-
-def test_simple_no_parallel_arcs():
-    """
-    Test if the graph has parallel arcs
-    """
-
-    a = set(G1.arcs())
-    b = list(G1.arcs())
-    assert len(a) == len(b)
-
-    a = set(G1.arcs(False))
-    b = list(G1.arcs(False))
-    assert len(a) == len(b)
-
-def test_simple_all_arcs():
-    """
-    Test simole graph has all the required arcs
-    """
-
-    a = set((u, v) for u, v in ARC_GEN if u != v)
-    b = set(G1.arcs())
-    c = set(G1.arcs(False))
+    a = sorted(testgraph[0].edges_iter())
+    b = sorted(testgraph[1].edges())
     assert a == b
-    assert a == c
 
-def test_bug_parallel_edge_check():
+def test_successors(testgraph):
     """
-    Bug invalidly removes nodes in parallel edge check
+    Test the successors for every node
     """
 
-    arcs = [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
-    A = make_digraph(6, len(arcs), arcs, simple=True)
+    for u in testgraph[0].nodes_iter():
+        a = sorted(testgraph[0].successors_iter(u))
+        b = sorted(testgraph[1].successors(u))
+        assert (u, a) == (u, b)
 
-    a = set((u, v) for u, v in arcs if u != v)
-    b = set(A.arcs())
-    c = set(A.arcs(False))
-    assert a == b
-    assert a == c
+def test_predecessors(testgraph):
+    """
+    Test the successors for every node
+    """
+
+    for u in testgraph[0].nodes_iter():
+        a = sorted(testgraph[0].predecessors_iter(u))
+        b = sorted(testgraph[1].predecessors(u))
+        assert (u, a) == (u, b)
+
+def test_basics(testgraph):
+    """
+    Test some basic stuff
+    """
+
+    assert testgraph[0].order() == testgraph[1].order()
+    assert testgraph[0].size() == testgraph[1].size()
+
+    for u in testgraph[0].nodes_iter():
+        assert testgraph[0].in_degree(u) == testgraph[1].in_degree(u)
+        assert testgraph[0].out_degree(u) == testgraph[1].out_degree(u)
+
+def test_load_save(tmpdir, testgraph):
+    """
+    Test if persistance is working correctly
+    """
+
+    a = testgraph[1]
+    
+    dg.save(tmpdir.strpath, a)
+    b = dg.load(tmpdir.strpath)
+
+    assert a.n_nodes == b.n_nodes
+    assert a.n_edges == b.n_edges
+    assert_eq(a.p_indptr, b.p_indptr)
+    assert_eq(a.s_indptr, b.s_indptr)
+    assert_eq(a.p_indices, b.p_indices)
+    assert_eq(a.s_indices, b.s_indices)
 
