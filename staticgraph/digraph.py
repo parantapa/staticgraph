@@ -10,7 +10,7 @@ from os.path import join, exists
 import cPickle as pk
 
 import numpy as np
-import staticgraph._edgelist as edgelist
+import staticgraph.edgelist as edgelist
 
 class DiGraph(object):
     """
@@ -35,6 +35,7 @@ class DiGraph(object):
         self.s_indptr  = s_indptr
         self.s_indices = s_indices
 
+    @property
     def nbytes(self):
         """
         Total bytes used to store internal arrays
