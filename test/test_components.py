@@ -62,7 +62,7 @@ def test_strongly_connected_components(testgraph):
 
     assert_components_equal(comps0, comps1)
 
-def xtest_weakly_connected_components(testgraph):
+def test_weakly_connected_components(testgraph):
     """
     Test strongly connected components
     """

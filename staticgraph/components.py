@@ -6,19 +6,56 @@ import numpy as np
 
 from staticgraph.types import NTYPE
 
-def strong(G):
+def weak(G):
     """
-    Returns a array mapping each node to a component
+    Returns a array mapping each node to a weakly connected component
     """
 
-    preorder     = np.zeros(G.order(), dtype = NTYPE)
-    lowlink      = np.zeros(G.order(), dtype = NTYPE)
-    comp_num     = np.zeros(G.order(), dtype = NTYPE)
+    comp_num     = np.zeros(G.order(), dtype=NTYPE)
     comp_num_max = 1
 
-    q   = np.empty(G.order(), dtype = NTYPE)
+    s   = np.empty(G.order(), dtype=NTYPE)
+    s_t = 0
+
+    for u in G.nodes():
+        if comp_num[u] == 0:
+            s[s_t] = u
+            s_t += 1
+            comp_num[u] = comp_num_max
+
+            while s_t != 0:
+                v = s[s_t - 1]
+                s_t -= 1
+
+                for w in G.successors(v):
+                    if comp_num[w] == 0:
+                        s[s_t] = w
+                        s_t += 1
+                        comp_num[w] = comp_num_max
+
+                for w in G.predecessors(v):
+                    if comp_num[w] == 0:
+                        s[s_t] = w
+                        s_t += 1
+                        comp_num[w] = comp_num_max
+
+            comp_num_max += 1 
+
+    return comp_num
+
+def strong(G):
+    """
+    Returns a array mapping each node to a strongly connected component
+    """
+
+    preorder     = np.zeros(G.order(), dtype=NTYPE)
+    lowlink      = np.zeros(G.order(), dtype=NTYPE)
+    comp_num     = np.zeros(G.order(), dtype=NTYPE)
+    comp_num_max = 1
+
+    q   = np.empty(G.order(), dtype=NTYPE)
     q_t = 0
-    s   = np.empty(G.order(), dtype = NTYPE)
+    s   = np.empty(G.order(), dtype=NTYPE)
     s_t = 0
 
     index = 0
