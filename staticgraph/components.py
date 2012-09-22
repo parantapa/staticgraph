@@ -6,7 +6,7 @@ import numpy as np
 
 from staticgraph.types import NTYPE
 
-def strongly_connected_components(G):
+def strong(G):
     """
     Returns a array mapping each node to a component
     """

@@ -1,12 +1,11 @@
 """
-Test the component finding algorithms
+Tests for component finding algorithms
 """
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 
 import networkx as nx
 import staticgraph as sg
-import staticgraph.digraph as dg
 
 def pytest_generate_tests(metafunc):
     """
@@ -16,10 +15,10 @@ def pytest_generate_tests(metafunc):
     if "testgraph" in metafunc.funcargnames:
         testgraphs = []
 
-        for _ in xrange(20):
+        for _ in xrange(10):
             # Random graph of 100 vertices
             a = nx.gnp_random_graph(100, 0.1, directed=True)
-            b = dg.make(a.order(), a.edges_iter(), a.size())
+            b = sg.digraph.make(a.order(), a.edges_iter(), a.size())
             testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)
@@ -59,7 +58,7 @@ def test_strongly_connected_components(testgraph):
     """
 
     comps0 = nx.strongly_connected_components(testgraph[0])
-    comps1 = sg.strongly_connected_components(testgraph[1])
+    comps1 = sg.components.strong(testgraph[1])
 
     assert_components_equal(comps0, comps1)
 
@@ -69,7 +68,7 @@ def xtest_weakly_connected_components(testgraph):
     """
 
     comps0 = nx.weakly_connected_components(testgraph[0])
-    comps1 = sg.weakly_connected_components(testgraph[1])
+    comps1 = sg.components.weak(testgraph[1])
 
     assert_components_equal(comps0, comps1)
 

@@ -7,12 +7,12 @@ ext_modules = [
     Extension("staticgraph.edgelist",
               ["staticgraph/edgelist.pyx"],
               include_dirs=[get_include()]),
-    Extension("staticgraph.algorithms.link_analysis",
-              ["staticgraph/algorithms/link_analysis.pyx"],
+    Extension("staticgraph.links",
+              ["staticgraph/links.pyx"],
               include_dirs=[get_include()]),
 ]
 
-packages = ["staticgraph", "staticgraph.algorithms"]
+packages = ["staticgraph"]
 
 setup(name = "StaticGraph",
       version = "0.1a",

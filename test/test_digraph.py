@@ -1,13 +1,11 @@
 """
-Tests for fast directed graph
+Tests for directed graph structure
 """
-
-from __future__ import division
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 
 import networkx as nx
-import staticgraph.digraph as dg
+import staticgraph as sg
 from numpy.testing import assert_equal
 
 def pytest_generate_tests(metafunc):
@@ -20,12 +18,12 @@ def pytest_generate_tests(metafunc):
 
         # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = dg.make(a.order(), a.edges_iter(), a.size())
+        b = sg.digraph.make(a.order(), a.edges_iter(), a.size())
         testgraphs.append((a, b))
 
         # 100 vertex random graph with parallel edges
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = dg.make(a.order(), a.edges() + a.edges(), a.size() * 2)
+        b = sg.digraph.make(a.order(), a.edges() + a.edges(), a.size() * 2)
         testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)
@@ -87,8 +85,8 @@ def test_load_save(tmpdir, testgraph):
 
     a = testgraph[1]
     
-    dg.save(tmpdir.strpath, a)
-    b = dg.load(tmpdir.strpath)
+    sg.digraph.save(tmpdir.strpath, a)
+    b = sg.digraph.load(tmpdir.strpath)
 
     assert a.n_nodes == b.n_nodes
     assert a.n_edges == b.n_edges
