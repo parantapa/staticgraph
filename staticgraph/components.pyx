@@ -1,66 +1,117 @@
+#cython: wraparound=False
+#cython: boundscheck=False
 """
 Components of a graph
 """
 
+__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
+
+from staticgraph.types import *
+from staticgraph.types cimport *
+
 import numpy as np
+cimport numpy as np
 
-from staticgraph.types import NTYPE
-
-def weak(G):
+def weak(object G):
     """
     Returns a array mapping each node to a weakly connected component
     """
 
+    cdef:
+        np.ndarray[ATYPE_t] p_indptr, s_indptr
+        np.ndarray[NTYPE_t] p_indices, s_indices
+        np.ndarray[NTYPE_t] comp_num, s
+        NTYPE_t comp_num_max, s_t, u, v, w, n_nodes
+        ATYPE_t start, end, i
+
+    # Assign to typed variables for fast acces
+    p_indptr  = G.p_indptr
+    p_indices = G.p_indices
+    s_indptr  = G.s_indptr
+    s_indices = G.s_indices
+    n_nodes   = G.n_nodes
+
+    # Set the component number of all nodes to zero
+    # FIXME: find better names for the next 2 variables
     comp_num     = np.zeros(G.order(), dtype=NTYPE)
     comp_num_max = 1
 
+    # Create the dfs stack
     s   = np.empty(G.order(), dtype=NTYPE)
     s_t = 0
 
-    for u in G.nodes():
+    # For every node check if it already belongs to a component
+    # If not start a dfs from that node
+    for u in range(n_nodes):
         if comp_num[u] == 0:
             s[s_t] = u
             s_t += 1
             comp_num[u] = comp_num_max
 
+            # While stack is not empty
             while s_t != 0:
                 v = s[s_t - 1]
                 s_t -= 1
 
-                for w in G.successors(v):
+                # Check all susccessors
+                start = s_indptr[v]
+                end   = s_indptr[v + 1]
+                for i in range(start, end):
+                    w = s_indices[i]
                     if comp_num[w] == 0:
                         s[s_t] = w
                         s_t += 1
                         comp_num[w] = comp_num_max
 
-                for w in G.predecessors(v):
+                # Check all predecessors
+                start = p_indptr[v]
+                end   = p_indptr[v + 1]
+                for i in range(start, end):
+                    w = p_indices[i]
                     if comp_num[w] == 0:
                         s[s_t] = w
                         s_t += 1
                         comp_num[w] = comp_num_max
 
+            # Out of the while loop
             comp_num_max += 1 
 
     return comp_num
 
-def strong(G):
+def strong(object G):
     """
     Returns a array mapping each node to a strongly connected component
     """
 
+    cdef:
+        np.ndarray[ATYPE_t] s_indptr
+        np.ndarray[NTYPE_t] s_indices
+        np.ndarray[NTYPE_t] preorder, lowlink, comp_num, q, s
+        NTYPE_t comp_num_max, q_t, s_t, index
+        NTYPE_t u, v, w, k, n_nodes
+        ATYPE_t start, end, i
+
+    # Assign to typed variables for fast acces
+    s_indptr  = G.s_indptr
+    s_indices = G.s_indices
+    n_nodes   = G.n_nodes
+
+    # Setup the data structures
     preorder     = np.zeros(G.order(), dtype=NTYPE)
     lowlink      = np.zeros(G.order(), dtype=NTYPE)
     comp_num     = np.zeros(G.order(), dtype=NTYPE)
     comp_num_max = 1
 
+    # Setup the stacks
     q   = np.empty(G.order(), dtype=NTYPE)
     q_t = 0
     s   = np.empty(G.order(), dtype=NTYPE)
     s_t = 0
 
+    # Start index
     index = 0
 
-    for u in G.nodes():
+    for u in range(n_nodes):
         if comp_num[u] == 0:
             s[s_t] = u
             s_t += 1
@@ -72,7 +123,10 @@ def strong(G):
                     preorder[v] = index
 
                 done = True
-                for w in G.successors(v):
+                start = s_indptr[v]
+                end   = s_indptr[v + 1]
+                for i in range(start, end):
+                    w = s_indices[i]
                     if preorder[w] == 0:
                         s[s_t] = w
                         s_t += 1
@@ -81,7 +135,10 @@ def strong(G):
 
                 if done:
                     lowlink[v] = preorder[v]
-                    for w in G.successors(v):
+                    start = s_indptr[v]
+                    end   = s_indptr[v + 1]
+                    for i in range(start, end):
+                        w = s_indices[i]
                         if comp_num[w] == 0:
                             if preorder[w] > preorder[v]:
                                 lowlink[v] = min(lowlink[v], lowlink[w])

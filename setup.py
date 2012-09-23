@@ -10,6 +10,9 @@ ext_modules = [
     Extension("staticgraph.links",
               ["staticgraph/links.pyx"],
               include_dirs=[get_include()]),
+    Extension("staticgraph.components",
+              ["staticgraph/components.pyx"],
+              include_dirs=[get_include()]),
 ]
 
 packages = ["staticgraph"]
