@@ -18,7 +18,7 @@ def pytest_generate_tests(metafunc):
         for _ in xrange(10):
             # Random graph of 100 vertices
             a = nx.gnp_random_graph(100, 0.1, directed=True)
-            b = sg.digraph.make(a.order(), a.edges_iter(), a.size())
+            b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
             testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)

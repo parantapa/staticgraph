@@ -79,7 +79,7 @@ def compact(NTYPE_t n_nodes, np.ndarray[ETYPE_t] es):
 
     return indptr, indices 
 
-def make(NTYPE_t n_nodes, object edges, ATYPE_t count):
+def make(NTYPE_t n_nodes, ATYPE_t count, object edges):
     """
     Load edge list to memory
     """

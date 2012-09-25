@@ -18,12 +18,12 @@ def pytest_generate_tests(metafunc):
 
         # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), a.edges_iter(), a.size())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
         testgraphs.append((a, b))
 
         # 100 vertex random graph with parallel edges
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), a.edges() + a.edges(), a.size() * 2)
+        b = sg.digraph.make(a.order(), 2 * a.size(), a.edges() + a.edges())
         testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)

@@ -111,7 +111,7 @@ class DiGraph(object):
 
         for u in self.nodes():
             for v in self.successors(u):
-                yield int(u), int(v)
+                yield u, int(v)
 
     def has_node(self, u):
         """
@@ -135,7 +135,7 @@ def load(store):
     # Load basic info
     fname = join(store, "base.pickle")
     with open(fname, "rb") as fobj:
-        n_nodes, n_arcs = pk.load(fobj)
+        n_nodes, n_edges = pk.load(fobj)
 
     # define load shortcut
     do_load = lambda fname : np.load(join(store, fname), "r")
@@ -147,7 +147,7 @@ def load(store):
     s_indices = do_load("s_indices.npy")
 
     # Create the graph
-    G = DiGraph(n_nodes, n_arcs, p_indptr, p_indices, s_indptr, s_indices)
+    G = DiGraph(n_nodes, n_edges, p_indptr, p_indices, s_indptr, s_indices)
     return G
 
 def save(store, G):
@@ -173,18 +173,21 @@ def save(store, G):
     do_save("s_indptr.npy", G.s_indptr)
     do_save("s_indices.npy", G.s_indices)
 
-def make(n_nodes, edges, count):
+def make(n_nodes, n_edges, edges):
     """
     Make a DiGraph
 
     n_nodes - # nodes in the graph.
               The graph contains all nodes form 0 to (n_nodes - 1)
+    n_edges - An over estimate of the number of edges.
     edges   - An iterable producing the edges of the graph.
-    count   - An over estimate of the number of edges.
     """
 
+    n_nodes = int(n_nodes)
+    n_edges = int(n_edges)
+
     # Create the edgelist
-    es = edgelist.make(n_nodes, edges, count)
+    es = edgelist.make(n_nodes, n_edges, edges)
 
     # Compact the edgelist
     s_indptr, s_indices = edgelist.compact(n_nodes, es)
