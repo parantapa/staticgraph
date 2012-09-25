@@ -18,11 +18,11 @@ def weak(object G):
     """
 
     cdef:
-        np.ndarray[ATYPE_t] p_indptr, s_indptr
-        np.ndarray[NTYPE_t] p_indices, s_indices
-        np.ndarray[NTYPE_t] comp_num, s
-        NTYPE_t comp_num_max, s_t, u, v, w, n_nodes
-        ATYPE_t start, end, i
+        np.ndarray[INDEX_t] p_indptr, s_indptr
+        np.ndarray[NODE_t] p_indices, s_indices
+        np.ndarray[NODE_t] comp_num, s
+        NODE_t u, v, w
+        INDEX_t comp_num_max, s_t, n_nodes, start, end, i
 
     # Assign to typed variables for fast acces
     p_indptr  = G.p_indptr
@@ -33,11 +33,11 @@ def weak(object G):
 
     # Set the component number of all nodes to zero
     # FIXME: find better names for the next 2 variables
-    comp_num     = np.zeros(G.order(), dtype=NTYPE)
+    comp_num     = np.zeros(G.order(), dtype=NODE)
     comp_num_max = 1
 
     # Create the dfs stack
-    s   = np.empty(G.order(), dtype=NTYPE)
+    s   = np.empty(G.order(), dtype=NODE)
     s_t = 0
 
     # For every node check if it already belongs to a component
@@ -84,12 +84,10 @@ def strong(object G):
     """
 
     cdef:
-        np.ndarray[ATYPE_t] s_indptr
-        np.ndarray[NTYPE_t] s_indices
-        np.ndarray[NTYPE_t] preorder, lowlink, comp_num, q, s
-        NTYPE_t comp_num_max, q_t, s_t, index
-        NTYPE_t u, v, w, k, n_nodes
-        ATYPE_t start, end, i
+        np.ndarray[INDEX_t] s_indptr
+        np.ndarray[NODE_t] s_indices, preorder, lowlink, comp_num, q, s
+        NODE_t u, v, w, k
+        INDEX_t comp_num_max, q_t, s_t, index, n_nodes, start, end, i
 
     # Assign to typed variables for fast acces
     s_indptr  = G.s_indptr
@@ -97,15 +95,15 @@ def strong(object G):
     n_nodes   = G.n_nodes
 
     # Setup the data structures
-    preorder     = np.zeros(G.order(), dtype=NTYPE)
-    lowlink      = np.zeros(G.order(), dtype=NTYPE)
-    comp_num     = np.zeros(G.order(), dtype=NTYPE)
+    preorder     = np.zeros(G.order(), dtype=NODE)
+    lowlink      = np.zeros(G.order(), dtype=NODE)
+    comp_num     = np.zeros(G.order(), dtype=NODE)
     comp_num_max = 1
 
     # Setup the stacks
-    q   = np.empty(G.order(), dtype=NTYPE)
+    q   = np.empty(G.order(), dtype=NODE)
     q_t = 0
-    s   = np.empty(G.order(), dtype=NTYPE)
+    s   = np.empty(G.order(), dtype=NODE)
     s_t = 0
 
     # Start index

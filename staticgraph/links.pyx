@@ -14,17 +14,17 @@ from staticgraph.types cimport *
 import numpy as np
 cimport numpy as np
 
-def hits(object G, size_t max_iter=20, double tol_err=1e-8):
+def hits(object G, INDEX_t max_iter=20, double tol_err=1e-8):
     """
     Find hits hubs and authorities algorithm on the directed graph
     """
 
     cdef:
         np.ndarray[double] hub, auth, hlast
-        np.ndarray[ATYPE_t] p_indptr, s_indptr
-        np.ndarray[NTYPE_t] p_indices, s_indices
-        NTYPE_t n_nodes, u, v
-        ATYPE_t i, start, end
+        np.ndarray[INDEX_t] p_indptr, s_indptr
+        np.ndarray[NODE_t] p_indices, s_indices
+        NODE_t u, v
+        INDEX_t i, start, end, n_nodes
         double norm, err
 
     # Assign to typed variables for fast acces
@@ -85,10 +85,10 @@ def pagerank(object G, double alpha=0.85, size_t max_iter=20,
 
     cdef:
         np.ndarray[double] score, xscor
-        np.ndarray[ATYPE_t] p_indptr, s_indptr
-        np.ndarray[NTYPE_t] p_indices, s_indices, dangle
-        ATYPE_t sstart, send, pstart, pend, i
-        NTYPE_t u, v, n_nodes, n_dangle
+        np.ndarray[INDEX_t] p_indptr, s_indptr
+        np.ndarray[NODE_t] p_indices, s_indices, dangle
+        NODE_t u, v
+        INDEX_t sstart, send, pstart, pend, i, n_nodes, n_dangle
         double norm, dangle_score, err
 
     # Assign to typed variables for fast acces
@@ -101,7 +101,7 @@ def pagerank(object G, double alpha=0.85, size_t max_iter=20,
     # Create the stores
     score  = np.empty(n_nodes, dtype=np.double)
     xscor  = np.empty(n_nodes, dtype=np.double)
-    dangle = np.empty(n_nodes, dtype=NTYPE)
+    dangle = np.empty(n_nodes, dtype=NODE)
 
     # Initialize fist score
     xscor.fill(1.0 / n_nodes)

@@ -10,52 +10,52 @@ from staticgraph.types cimport *
 import numpy as np
 cimport numpy as np
 
-cdef ETYPE_t U32MASK = (2 ** 32) - 1
+cdef NODE2_t MASK32 = (2 ** 32) - 1
 
-cdef inline ETYPE_t uv_combine(ETYPE_t u, ETYPE_t v):
-    return (u << 32) | (v & U32MASK)
+cdef inline NODE2_t uv_combine(NODE2_t u, NODE2_t v):
+    return (u << 32) | (v & MASK32)
 
-cdef inline ETYPE_t u_get(ETYPE_t e):
+cdef inline NODE2_t u_get(NODE2_t e):
     return (e >> 32)
 
-cdef inline ETYPE_t v_get(ETYPE_t e):
-    return (e & U32MASK)
+cdef inline NODE2_t v_get(NODE2_t e):
+    return (e & MASK32)
 
-cdef inline ETYPE_t uv_swap(ETYPE_t e):
+cdef inline NODE2_t uv_swap(NODE2_t e):
     cdef:
-        ETYPE_t u, v
+        NODE2_t u, v
 
-    v = e & U32MASK
+    v = e & MASK32
     u = e >> 32
-    return (v << 32) | (u & U32MASK)
+    return (v << 32) | (u & MASK32)
 
-def swap(np.ndarray[ETYPE_t] es):
+def swap(np.ndarray[NODE2_t] es):
     """
     Swap the uv pairs in es
     """
 
     cdef:
-        ATYPE_t i, n_edges
+        INDEX_t i, n_edges
 
     n_edges = len(es)
     for i in range(n_edges):
         es[i] = uv_swap(es[i])
 
-def compact(NTYPE_t n_nodes, np.ndarray[ETYPE_t] es):
+def compact(INDEX_t n_nodes, np.ndarray[NODE2_t] es):
     """
     Compact the edge list
     """
 
     cdef:
-        NTYPE_t u, v, i
-        ATYPE_t j, n_edges
-        ETYPE_t e
-        np.ndarray[ATYPE_t] indptr
-        np.ndarray[NTYPE_t] indices
+        NODE_t u, v
+        NODE2_t e
+        INDEX_t i, j, n_edges
+        np.ndarray[INDEX_t] indptr
+        np.ndarray[NODE_t] indices
 
     n_edges = len(es)
-    indptr  = np.empty(n_nodes + 1, ATYPE)
-    indices = np.empty(n_edges, NTYPE)
+    indptr  = np.empty(n_nodes + 1, INDEX)
+    indices = np.empty(n_edges, NODE)
 
     indptr[0] = 0
     i, j = 0, 0
@@ -79,23 +79,23 @@ def compact(NTYPE_t n_nodes, np.ndarray[ETYPE_t] es):
 
     return indptr, indices 
 
-def make(NTYPE_t n_nodes, ATYPE_t count, object edges):
+def make(INDEX_t n_nodes, INDEX_t n_edges, object edges):
     """
     Load edge list to memory
     """
 
     cdef:
-        NTYPE_t u, v
-        ATYPE_t i, j
-        np.ndarray[ETYPE_t] es
+        NODE_t u, v
+        INDEX_t i, j
+        np.ndarray[NODE2_t] es
 
     # Allocate memory
-    es = np.empty(count, dtype=ETYPE)
+    es = np.empty(n_edges, dtype=NODE2)
 
     # Load all arcs into memory
     i = 0
     for u, v in edges:
-        if i == count:
+        if i == n_edges:
             raise ValueError("More edges found than allocated for")
         if not u < n_nodes:
             raise ValueError("Invalid source node found in edges")
@@ -108,22 +108,22 @@ def make(NTYPE_t n_nodes, ATYPE_t count, object edges):
 
         es[i] = uv_combine(u, v)
         i += 1
-    count = i
+    n_edges = i
 
     # Check for parallel edges
     es.sort()
     i, j = 1, 0
-    while i < count:
+    while i < n_edges:
         if es[i] == es[j]:
             i += 1
         else:
             es[j + 1] = es[i]
             i += 1
             j += 1
-    count = j + 1
+    n_edges = j + 1
 
     # Release extra space
-    es.resize(count, refcheck=False)
+    es.resize(n_edges, refcheck=False)
 
     return es
 

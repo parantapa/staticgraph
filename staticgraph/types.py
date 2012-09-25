@@ -2,13 +2,9 @@
 Basic data types for the graph structures
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
-__all__ = ["NTYPE", "ATYPE", "ETYPE"]
-
 import numpy as np
 
-NTYPE = np.uint32       # Type for node ids
-ATYPE = np.uint64       # Type for arc ids
-ETYPE = np.uint64       # Type for edgelists
+NODE  = np.uint32 # Node type
+NODE2 = np.uint64 # Two nodes in one
+INDEX = np.uint64 # Index type
 
