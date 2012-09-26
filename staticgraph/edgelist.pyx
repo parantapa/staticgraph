@@ -4,58 +4,55 @@
 Fast edgelist manipulation
 """
 
-from staticgraph.types import *
-from staticgraph.types cimport *
-
 import numpy as np
-cimport numpy as np
+from numpy cimport uint64_t, uint32_t, ndarray
 
-cdef NODE2_t MASK32 = (2 ** 32) - 1
+cdef uint64_t MASK32 = (2 ** 32) - 1
 
-cdef inline NODE2_t uv_combine(NODE2_t u, NODE2_t v):
+cdef inline uint64_t uv_combine(uint64_t u, uint64_t v):
     return (u << 32) | (v & MASK32)
 
-cdef inline NODE2_t u_get(NODE2_t e):
+cdef inline uint64_t u_get(uint64_t e):
     return (e >> 32)
 
-cdef inline NODE2_t v_get(NODE2_t e):
+cdef inline uint64_t v_get(uint64_t e):
     return (e & MASK32)
 
-cdef inline NODE2_t uv_swap(NODE2_t e):
+cdef inline uint64_t uv_swap(uint64_t e):
     cdef:
-        NODE2_t u, v
+        uint64_t u, v
 
     v = e & MASK32
     u = e >> 32
     return (v << 32) | (u & MASK32)
 
-def swap(np.ndarray[NODE2_t] es):
+def swap(ndarray[uint64_t] es):
     """
     Swap the uv pairs in es
     """
 
     cdef:
-        INDEX_t i, n_edges
+        size_t i, n_edges
 
     n_edges = len(es)
     for i in range(n_edges):
         es[i] = uv_swap(es[i])
 
-def compact(INDEX_t n_nodes, np.ndarray[NODE2_t] es):
+def compact(size_t n_nodes, ndarray[uint64_t] es):
     """
     Compact the edge list
     """
 
     cdef:
-        NODE_t u, v
-        NODE2_t e
-        INDEX_t i, j, n_edges
-        np.ndarray[INDEX_t] indptr
-        np.ndarray[NODE_t] indices
+        uint32_t u, v
+        uint64_t e
+        size_t i, j, n_edges
+        ndarray[uint64_t] indptr
+        ndarray[uint32_t] indices
 
     n_edges = len(es)
-    indptr  = np.empty(n_nodes + 1, INDEX)
-    indices = np.empty(n_edges, NODE)
+    indptr  = np.empty(n_nodes + 1, "u8")
+    indices = np.empty(n_edges, "u4")
 
     indptr[0] = 0
     i, j = 0, 0
@@ -79,18 +76,18 @@ def compact(INDEX_t n_nodes, np.ndarray[NODE2_t] es):
 
     return indptr, indices 
 
-def make(INDEX_t n_nodes, INDEX_t n_edges, object edges):
+def make(size_t n_nodes, size_t n_edges, object edges):
     """
     Load edge list to memory
     """
 
     cdef:
-        NODE_t u, v
-        INDEX_t i, j
-        np.ndarray[NODE2_t] es
+        uint32_t u, v
+        size_t i, j
+        ndarray[uint64_t] es
 
     # Allocate memory
-    es = np.empty(n_edges, dtype=NODE2)
+    es = np.empty(n_edges, dtype="u8")
 
     # Load all arcs into memory
     i = 0

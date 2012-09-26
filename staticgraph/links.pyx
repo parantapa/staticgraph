@@ -8,23 +8,20 @@ from __future__ import division
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 
-from staticgraph.types import *
-from staticgraph.types cimport *
-
 import numpy as np
-cimport numpy as np
+from numpy cimport uint64_t, uint32_t, ndarray
 
-def hits(object G, INDEX_t max_iter=20, double tol_err=1e-8):
+def hits(object G, size_t max_iter=20, double tol_err=1e-8):
     """
     Find hits hubs and authorities algorithm on the directed graph
     """
 
     cdef:
-        np.ndarray[double] hub, auth, hlast
-        np.ndarray[INDEX_t] p_indptr, s_indptr
-        np.ndarray[NODE_t] p_indices, s_indices
-        NODE_t u, v
-        INDEX_t i, start, end, n_nodes
+        ndarray[double] hub, auth, hlast
+        ndarray[uint64_t] p_indptr, s_indptr
+        ndarray[uint32_t] p_indices, s_indices
+        uint32_t u, v
+        size_t i, start, end, n_nodes
         double norm, err
 
     # Assign to typed variables for fast acces
@@ -35,9 +32,9 @@ def hits(object G, INDEX_t max_iter=20, double tol_err=1e-8):
     n_nodes   = G.n_nodes
 
     # Create the stores
-    hub   = np.ones(n_nodes, dtype=np.double)
-    auth  = np.ones(n_nodes, dtype=np.double)
-    hlast = np.ones(n_nodes, dtype=np.double)
+    hub   = np.ones(n_nodes, dtype="f8")
+    auth  = np.ones(n_nodes, dtype="f8")
+    hlast = np.ones(n_nodes, dtype="f8")
 
     for _ in range(max_iter):
         # Calculate auth scores
@@ -84,11 +81,11 @@ def pagerank(object G, double alpha=0.85, size_t max_iter=20,
     """
 
     cdef:
-        np.ndarray[double] score, xscor
-        np.ndarray[INDEX_t] p_indptr, s_indptr
-        np.ndarray[NODE_t] p_indices, s_indices, dangle
-        NODE_t u, v
-        INDEX_t sstart, send, pstart, pend, i, n_nodes, n_dangle
+        ndarray[double] score, xscor
+        ndarray[uint64_t] p_indptr, s_indptr
+        ndarray[uint32_t] p_indices, s_indices, dangle
+        uint32_t u, v
+        size_t i, sstart, send, pstart, pend, n_nodes, n_dangle
         double norm, dangle_score, err
 
     # Assign to typed variables for fast acces
@@ -99,9 +96,9 @@ def pagerank(object G, double alpha=0.85, size_t max_iter=20,
     n_nodes   = G.n_nodes
 
     # Create the stores
-    score  = np.empty(n_nodes, dtype=np.double)
-    xscor  = np.empty(n_nodes, dtype=np.double)
-    dangle = np.empty(n_nodes, dtype=NODE)
+    score  = np.empty(n_nodes, dtype="f8")
+    xscor  = np.empty(n_nodes, dtype="f8")
+    dangle = np.empty(n_nodes, dtype="u4")
 
     # Initialize fist score
     xscor.fill(1.0 / n_nodes)

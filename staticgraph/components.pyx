@@ -6,11 +6,8 @@ Components of a graph
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 
-from staticgraph.types import *
-from staticgraph.types cimport *
-
 import numpy as np
-cimport numpy as np
+from numpy cimport uint64_t, uint32_t, ndarray
 
 def weak(object G):
     """
@@ -18,11 +15,10 @@ def weak(object G):
     """
 
     cdef:
-        np.ndarray[INDEX_t] p_indptr, s_indptr
-        np.ndarray[NODE_t] p_indices, s_indices
-        np.ndarray[NODE_t] comp_num, s
-        NODE_t u, v, w
-        INDEX_t comp_num_max, s_t, n_nodes, start, end, i
+        ndarray[uint64_t] p_indptr, s_indptr
+        ndarray[uint32_t] p_indices, s_indices, comp_num, s
+        uint32_t u, v, w
+        size_t i, start, end, n_nodes, comp_num_max, s_t
 
     # Assign to typed variables for fast acces
     p_indptr  = G.p_indptr
@@ -33,11 +29,11 @@ def weak(object G):
 
     # Set the component number of all nodes to zero
     # FIXME: find better names for the next 2 variables
-    comp_num     = np.zeros(G.order(), dtype=NODE)
+    comp_num     = np.zeros(G.order(), dtype="u4")
     comp_num_max = 1
 
     # Create the dfs stack
-    s   = np.empty(G.order(), dtype=NODE)
+    s   = np.empty(G.order(), dtype="u4")
     s_t = 0
 
     # For every node check if it already belongs to a component
@@ -74,7 +70,7 @@ def weak(object G):
                         comp_num[w] = comp_num_max
 
             # Out of the while loop
-            comp_num_max += 1 
+            comp_num_max += 1
 
     return comp_num
 
@@ -84,10 +80,10 @@ def strong(object G):
     """
 
     cdef:
-        np.ndarray[INDEX_t] s_indptr
-        np.ndarray[NODE_t] s_indices, preorder, lowlink, comp_num, q, s
-        NODE_t u, v, w, k
-        INDEX_t comp_num_max, q_t, s_t, index, n_nodes, start, end, i
+        ndarray[uint64_t] s_indptr
+        ndarray[uint32_t] s_indices, preorder, lowlink, comp_num, q, s
+        uint32_t u, v, w, k
+        size_t i, start, end, n_nodes, comp_num_max, q_t, s_t, index
 
     # Assign to typed variables for fast acces
     s_indptr  = G.s_indptr
@@ -95,15 +91,15 @@ def strong(object G):
     n_nodes   = G.n_nodes
 
     # Setup the data structures
-    preorder     = np.zeros(G.order(), dtype=NODE)
-    lowlink      = np.zeros(G.order(), dtype=NODE)
-    comp_num     = np.zeros(G.order(), dtype=NODE)
+    preorder     = np.zeros(G.order(), dtype="u4")
+    lowlink      = np.zeros(G.order(), dtype="u4")
+    comp_num     = np.zeros(G.order(), dtype="u4")
     comp_num_max = 1
 
     # Setup the stacks
-    q   = np.empty(G.order(), dtype=NODE)
+    q   = np.empty(G.order(), dtype="u4")
     q_t = 0
-    s   = np.empty(G.order(), dtype=NODE)
+    s   = np.empty(G.order(), dtype="u4")
     s_t = 0
 
     # Start index
@@ -154,6 +150,6 @@ def strong(object G):
                     else:
                         q[q_t] = v
                         q_t += 1
-    
+
     return comp_num
 
