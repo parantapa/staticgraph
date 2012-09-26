@@ -26,6 +26,11 @@ def pytest_generate_tests(metafunc):
         b = sg.digraph.make(a.order(), 2 * a.size(), a.edges() + a.edges())
         testgraphs.append((a, b))
 
+        # 100 vertex random graph with overestimated edge count
+        a = nx.gnp_random_graph(100, 0.1, directed=True)
+        b = sg.digraph.make(a.order(), 2 * a.size(), a.edges_iter())
+        testgraphs.append((a, b))
+
         metafunc.parametrize("testgraph", testgraphs)
 
 def test_nodes(testgraph):

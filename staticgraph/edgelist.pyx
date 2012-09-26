@@ -65,16 +65,16 @@ def compact(size_t n_nodes, ndarray[uint64_t] es):
             # Time for next node
             if u != i:
                 break
-            
+
             # Copy the edge
             indices[j] = v
             j += 1
-        
+
         # Note the end of this node's edge list
         indptr[i + 1] = j
         i += 1
 
-    return indptr, indices 
+    return indptr, indices
 
 def make(size_t n_nodes, size_t n_edges, object edges):
     """
@@ -107,8 +107,11 @@ def make(size_t n_nodes, size_t n_edges, object edges):
         i += 1
     n_edges = i
 
-    # Check for parallel edges
+    # Release extra space and sort
+    es.resize(n_edges, refcheck=False)
     es.sort()
+
+    # Check for parallel edges
     i, j = 1, 0
     while i < n_edges:
         if es[i] == es[j]:
