@@ -1,7 +1,7 @@
 #cython: wraparound=False
 #cython: boundscheck=False
 """
-Link analysis algorithms for graphs
+Link analysis algorithms for directed graphs.
 """
 
 from __future__ import division
@@ -13,7 +13,13 @@ from numpy cimport uint64_t, uint32_t, ndarray
 
 def hits(object G, size_t max_iter=20, double tol_err=1e-8):
     """
-    Find hits hubs and authorities algorithm on the directed graph
+    Run Hits on the directed graph.
+
+    Returns two arrays containing the hub and authority scores for the nodes.
+
+    G        - the directed graph
+    max_iter - upper bound on the number of iterations
+    tol_err  - tolerable error in convergence
     """
 
     cdef:
@@ -77,7 +83,14 @@ def hits(object G, size_t max_iter=20, double tol_err=1e-8):
 def pagerank(object G, double alpha=0.85, size_t max_iter=20,
              double tol_err=1e-8):
     """
-    Run pagerank algorithm on the graph
+    Run Pagerank the graph directed graph.
+
+    Returns an array containing the pagerank scores of the nodes.
+
+    G        - the directed graph
+    alpha    - the pagerank dampening factor
+    max_iter - upper bound on the number of iterations
+    tol_err  - tolerable error in convergence
     """
 
     cdef:

@@ -1,5 +1,5 @@
 """
-Simple Directed Graph
+Simple memory efficient directed graph.
 """
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
@@ -14,7 +14,7 @@ import staticgraph.edgelist as edgelist
 
 class DiGraph(object):
     """
-    Simple Directed Graph
+    Simple directed graph.
 
     n_nodes   - # nodes
     n_edges   - # edges
@@ -38,7 +38,7 @@ class DiGraph(object):
     @property
     def nbytes(self):
         """
-        Total bytes used to store internal arrays
+        Return total size of internal arrays in bytes.
         """
 
         nbytes  = self.p_indptr.nbytes
@@ -49,7 +49,7 @@ class DiGraph(object):
 
     def successors(self, u):
         """
-        Successors of node u
+        Return iterable for successors of node u.
         """
 
         start = self.s_indptr[u]
@@ -58,7 +58,7 @@ class DiGraph(object):
 
     def predecessors(self, v):
         """
-        Predecessors of node v
+        Return iterable for predecessors of node v.
         """
 
         start = self.p_indptr[v]
@@ -67,7 +67,7 @@ class DiGraph(object):
 
     def in_degree(self, v):
         """
-        In-degree of node v
+        Return in-degree of node v.
         """
 
         start = self.p_indptr[v]
@@ -76,7 +76,7 @@ class DiGraph(object):
 
     def out_degree(self, u):
         """
-        Out-degree of node u
+        Return out-degree of node u.
         """
 
         start = self.s_indptr[u]
@@ -85,28 +85,28 @@ class DiGraph(object):
 
     def order(self):
         """
-        Number of nodes in the graph
+        Return number of nodes in the graph.
         """
 
         return self.n_nodes
 
     def size(self):
         """
-        Number of edges in the graph
+        Return number of edges in the graph.
         """
 
         return self.n_edges
 
     def nodes(self):
         """
-        Iterable that generates the nodes of the graph
+        Return iterable for nodes of the graph.
         """
 
         return xrange(self.n_nodes)
 
     def edges(self):
         """
-        Iterable that generates the edges of the graph
+        Return iterable for edges of the graph.
         """
 
         for u in self.nodes():
@@ -115,21 +115,23 @@ class DiGraph(object):
 
     def has_node(self, u):
         """
-        Check if node u exists
+        Check if node u exists.
         """
 
         return (0 <= u < self.n_nodes)
 
     def has_edge(self, u, v):
         """
-        Check if edge (u, v) exists
+        Check if edge (u, v) exists.
         """
 
         return (v in self.successors(u))
 
 def load(store):
     """
-    Load a graph from disk
+    Load a graph from disk.
+
+    store - directory where the graph is stored
     """
 
     # Load basic info
@@ -152,7 +154,10 @@ def load(store):
 
 def save(store, G):
     """
-    Save the graph G to disk
+    Save the graph to disk.
+
+    store - the directory where the graph will be stored
+    G     - the direceted graph
     """
 
     # Create the directory
@@ -175,12 +180,12 @@ def save(store, G):
 
 def make(n_nodes, n_edges, edges):
     """
-    Make a DiGraph
+    Make a DiGraph.
 
     n_nodes - # nodes in the graph.
               The graph contains all nodes form 0 to (n_nodes - 1)
-    n_edges - An over estimate of the number of edges.
-    edges   - An iterable producing the edges of the graph.
+    n_edges - an over estimate of the number of edges
+    edges   - an iterable producing the edges of the graph
     """
 
     n_nodes = int(n_nodes)

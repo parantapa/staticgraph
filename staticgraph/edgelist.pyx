@@ -1,7 +1,7 @@
 #cython: wraparound=False
 #cython: boundscheck=False
 """
-Fast edgelist manipulation
+Routines for fast edgelist manipulation.
 """
 
 import numpy as np
@@ -28,7 +28,9 @@ cdef inline uint64_t uv_swap(uint64_t e):
 
 def swap(ndarray[uint64_t] es):
     """
-    Swap the uv pairs in es
+    Swap the node pairs in edge list.
+
+    es - the edge list
     """
 
     cdef:
@@ -40,7 +42,10 @@ def swap(ndarray[uint64_t] es):
 
 def compact(size_t n_nodes, ndarray[uint64_t] es):
     """
-    Compact the edge list
+    Compact the edge list.
+
+    n_nodes - number of nodes
+    es      - the edge list
     """
 
     cdef:
@@ -78,7 +83,11 @@ def compact(size_t n_nodes, ndarray[uint64_t] es):
 
 def make(size_t n_nodes, size_t n_edges, object edges):
     """
-    Load edge list to memory
+    Load edge list to memory.
+
+    n_nodes - number of nodes
+    n_edges - upper bound on number of edges
+    edges   - iterable producing (u, v) pairs
     """
 
     cdef:

@@ -1,7 +1,7 @@
 #cython: wraparound=False
 #cython: boundscheck=False
 """
-Components of a graph
+Finding components in directed graphs.
 """
 
 __author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
@@ -11,7 +11,13 @@ from numpy cimport uint64_t, uint32_t, ndarray
 
 def weak(object G):
     """
-    Returns a array mapping each node to a weakly connected component
+    Compute weak components in the graph.
+
+    Returns a array mapping each node to a weakly connected component.
+    Component numbers start from 1.
+    The algorithm uses DFS to find components.
+
+    G - the directed graph.
     """
 
     cdef:
@@ -76,7 +82,12 @@ def weak(object G):
 
 def strong(object G):
     """
-    Returns a array mapping each node to a strongly connected component
+    Compute strong components for the graph.
+
+    Returns a array mapping each node to a strongly connected component.
+    Component numbers start from 1.
+
+    G - the directed graph.
     """
 
     cdef:
