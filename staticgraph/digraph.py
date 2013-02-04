@@ -8,6 +8,7 @@ __all__ = ["DiGraph", "load", "save", "make"]
 from os import mkdir
 from os.path import join, exists
 import cPickle as pk
+from itertools import imap
 
 import numpy as np
 import staticgraph.edgelist as edgelist
@@ -54,7 +55,7 @@ class DiGraph(object):
 
         start = self.s_indptr[u]
         stop  = self.s_indptr[u + 1]
-        return self.s_indices[start:stop]
+        return imap(int, self.s_indices[start:stop])
 
     def predecessors(self, v):
         """
@@ -63,7 +64,7 @@ class DiGraph(object):
 
         start = self.p_indptr[v]
         stop  = self.p_indptr[v + 1]
-        return self.p_indices[start:stop]
+        return imap(int, self.p_indices[start:stop])
 
     def in_degree(self, v):
         """
@@ -111,7 +112,7 @@ class DiGraph(object):
 
         for u in self.nodes():
             for v in self.successors(u):
-                yield u, int(v)
+                yield u, v
 
     def has_node(self, u):
         """
