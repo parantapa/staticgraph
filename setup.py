@@ -17,9 +17,10 @@ ext_modules = [
 
 packages = ["staticgraph"]
 
-setup(name = "StaticGraph",
-      version = "0.1a",
-      packages = packages,
-      ext_modules = ext_modules,
-      cmdclass = {'build_ext': build_ext}
+setup(
+    name        = "StaticGraph",
+    version     = "0.1",
+    packages    = packages,
+    ext_modules = ext_modules,
+    cmdclass    = {'build_ext': build_ext}
 )
