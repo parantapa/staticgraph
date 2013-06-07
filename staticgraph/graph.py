@@ -2,16 +2,17 @@
 Simple memory efficient undirected graph.
 """
 
+from os import mkdir
+from os.path import join, exists
 import cPickle as pk
 from itertools import imap
-from os.path import join, exists, mkdir
 
 import numpy as np
 import staticgraph.edgelist as edgelist
 
 class Graph(object):
     """
-    Simple directed graph.
+    Simple undirected graph.
 
     n_nodes   - # nodes
     n_edges   - # edges
@@ -116,8 +117,8 @@ def load(store):
     do_load = lambda fname : np.load(join(store, fname), "r")
 
     # Make the arrays
-    n_indptr  = do_load("p_indptr.npy")
-    n_indices = do_load("p_indices.npy")
+    n_indptr  = do_load("n_indptr.npy")
+    n_indices = do_load("n_indices.npy")
     
     # Create the graph
     G = Graph(n_nodes, n_edges, n_indptr, n_indices)
