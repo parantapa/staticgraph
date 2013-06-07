@@ -82,7 +82,8 @@ class Graph(object):
 
         for u in self.nodes():
             for v in self.neighbours(u):
-                yield u, v
+                if u < v:
+                    yield u, v
 
     def has_node(self, u):
         """
@@ -95,11 +96,9 @@ class Graph(object):
         """
         Check if edge (u, v) exists.
         """
-        if v > u:
-            u, v = v, u
 
         return (v in self.neighbours(u))
-        
+
 def load(store):
     """
     Load a graph from disk.
@@ -118,7 +117,7 @@ def load(store):
     # Make the arrays
     n_indptr  = do_load("p_indptr.npy")
     n_indices = do_load("p_indices.npy")
-    
+
     # Create the graph
     G = Graph(n_nodes, n_edges, n_indptr, n_indices)
     return G
@@ -146,7 +145,16 @@ def save(store, G):
     # Make the arrays
     do_save("n_indptr.npy", G.n_indptr)
     do_save("n_indices.npy", G.n_indices)
-    
+
+def _both_edge(edges):
+    """
+    Yield both u, v and v, u edge for every edge in edges.
+    """
+
+    for u, v in edges:
+        yield u, v
+        yield v, u
+
 def make(n_nodes, n_edges, edges):
     """
     Make a Graph.
@@ -159,13 +167,14 @@ def make(n_nodes, n_edges, edges):
 
     n_nodes = int(n_nodes)
     n_edges = int(n_edges)
+    edges   = _both_edge(edges)
 
     # Create the edgelist
-    es = edgelist.make(n_nodes, n_edges, edges)
+    es = edgelist.make(n_nodes, 2 * n_edges, edges)
 
     # Compact the edgelist
     n_indptr, n_indices = edgelist.compact(n_nodes, es)
 
     # Create the graph
-    G = Graph(n_nodes, len(es), n_indptr, n_indices)
+    G = Graph(n_nodes, len(es) / 2, n_indptr, n_indices)
     return G
