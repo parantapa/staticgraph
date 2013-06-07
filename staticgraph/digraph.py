@@ -2,7 +2,6 @@
 Simple memory efficient directed graph.
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
 __all__ = ["DiGraph", "load", "save", "make"]
 
 from os import mkdir

@@ -2,8 +2,6 @@
 Tests for link analysis functions
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
 import networkx as nx
 import staticgraph as sg
 

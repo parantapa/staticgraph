@@ -2,8 +2,6 @@
 Tests for directed graph structure
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
 import networkx as nx
 import staticgraph as sg
 from numpy.testing import assert_equal

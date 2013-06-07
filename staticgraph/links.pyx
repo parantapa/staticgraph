@@ -6,8 +6,6 @@ Link analysis algorithms for directed graphs.
 
 from __future__ import division
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
 import numpy as np
 from numpy cimport uint64_t, uint32_t, ndarray
 

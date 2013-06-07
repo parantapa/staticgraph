@@ -4,8 +4,6 @@
 Finding components in directed graphs.
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
 import numpy as np
 from numpy cimport uint64_t, uint32_t, ndarray
 

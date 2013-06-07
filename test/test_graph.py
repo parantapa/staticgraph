@@ -2,8 +2,6 @@
 Tests for undirected graph structure
 """
 
-__author__  = "Arpan Das <arpandas91@gmail.com>"
-
 import networkx as nx
 import staticgraph as sg
 from numpy.testing import assert_equal

@@ -2,8 +2,6 @@
 Tests for component finding algorithms
 """
 
-__author__  = "Parantapa Bhattacharya <pb@parantapa.net>"
-
 import networkx as nx
 import staticgraph as sg
 
