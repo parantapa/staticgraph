@@ -17,24 +17,53 @@ def complement(G):
     
     Parameters
     ----------
-    G : graph
-       A staticgraph graph
+    G : An undirected staticgraph
 
     Returns
     -------
-    Complement_Graph : A new graph.
+    H : A new staticgraph graph.
 
     Notes
     ------
-    Note that complement() does not create self-loops and also
-    does not produce parallel edges for MultiGraphs.
 
     Graph, node, and edge data are not propagated to the new graph.
     """
- 
+
+    nset = set(G.nodes())
     n_nodes = G.order()
-    edges = sorted([(u, v) for u in range(n_nodes)
-            for v in range(u+1, n_nodes) 
-            if (u, v) not in G.edges()])
-    Complement_Graph = make(n_nodes, len(edges), edges_iter(edges))
-    return Complement_Graph
+    n_edges = n_nodes * (n_nodes - 1) / 2 - G.size()
+ 
+    cmp_edges = ((u, w) for u in G.nodes()
+		    for w in nset - set(G.neighbours(u))
+		    if w > u)
+    H = make(n_nodes, n_edges, cmp_edges)
+    return H
+
+def compose(G, H):
+    """
+    Return a new graph of G composed with H.
+
+    Composition is the simple union of the node sets and edge sets.
+    The node sets of G and H need not be disjoint.)
+
+    Parameters
+    ----------
+    G,H : Two Undirected staticgraphs
+
+    Returns
+    -------
+    K: A new graph  with the same type as G
+
+    Notes
+    -----
+    It is mandatory that G and H be both undirected.
+    """
+
+    edges = ((u, v) for (u, v) in G.edges()
+                    or (u, v) in H.edges())
+                    
+    n_nodes = G.order()
+    if H.order() > G.order():
+        n_nodes = H.order()
+    K = make(n_nodes, G.size() + H.size(), edges_iter(edges))
+    return K
