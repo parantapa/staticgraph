@@ -85,4 +85,3 @@ def test_load_save(tmpdir, testgraph):
     assert a.n_edges == b.n_edges
     assert_equal(a.n_indptr, b.n_indptr)
     assert_equal(a.n_indices, b.n_indices)
-
