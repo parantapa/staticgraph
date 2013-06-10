@@ -65,5 +65,5 @@ def compose(G, H):
     n_nodes = G.order()
     if H.order() > G.order():
         n_nodes = H.order()
-    K = make(n_nodes, G.size() + H.size(), edges_iter(edges))
-    return K
+    GC = make(n_nodes, G.size() + H.size(), edges_iter(edges))
+    return GC
