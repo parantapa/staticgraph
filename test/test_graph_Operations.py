@@ -41,9 +41,9 @@ def test_complement(testgraph):
     """
 
     a = nx.complement(testgraph[0])
-    b = sg.graph.complement(testgraph[2])
+    b = sg.graph_Operations.complement(testgraph[2])
     c = nx.complement(testgraph[1])
-    d = sg.graph.complement(testgraph[3])
+    d = sg.graph_Operations.complement(testgraph[3])
     Assert(a, b)
     Assert(c, d)
 
@@ -53,7 +53,7 @@ def test_compose(testgraph):
     """
 
     a = nx.compose(testgraph[0], testgraph[1])
-    b = sg.graph.compose(testgraph[2], testgraph[3])
+    b = sg.graph_Operations.compose(testgraph[2], testgraph[3])
     Assert(a, b)
 
 def test_union(testgraph):
@@ -62,7 +62,7 @@ def test_union(testgraph):
     """
 
     a = nx.union(testgraph[0], testgraph[1])
-    b = sg.graph.union(testgraph[2], testgraph[3])
+    b = sg.graph_Operations.union(testgraph[2], testgraph[3])
     Assert(a, b)
 
 def test_disjoint_union(testgraph):
@@ -71,7 +71,7 @@ def test_disjoint_union(testgraph):
     """
 
     a = nx.disjoint_union(testgraph[0], testgraph[1])
-    b = sg.graph.disjoint_union(testgraph[2], testgraph[3])
+    b = sg.graph_Operations.disjoint_union(testgraph[2], testgraph[3])
     Assert(a, b)
 
 def test_intersection(testgraph):
@@ -80,7 +80,7 @@ def test_intersection(testgraph):
     """
 
     a = nx.intersection(testgraph[0], testgraph[1])
-    b = sg.graph.intersection(testgraph[2], testgraph[3])
+    b = sg.graph_Operations.intersection(testgraph[2], testgraph[3])
     Assert(a, b)
 
 def test_difference(testgraph):
@@ -89,7 +89,7 @@ def test_difference(testgraph):
     """
 
     a = nx.difference(testgraph[0], testgraph[1])
-    b = sg.graph.difference(testgraph[2], testgraph[3])
+    b = sg.graph_Operations.difference(testgraph[2], testgraph[3])
     Assert(a, b)
 
 def test_symmetric_defference(testgraph):
@@ -97,6 +97,6 @@ def test_symmetric_defference(testgraph):
     Test the Symmetric Difference of the two graphs are same
     """
 
-    a = nx.symmetric_defference(testgraph[0], testgraph[1])
-    b = sg.graph.symmetric_defference(testgraph[2], testgraph[3])
+    a = nx.symmetric_difference(testgraph[0], testgraph[1])
+    b = sg.graph_Operations.symmetric_difference(testgraph[2], testgraph[3])
     Assert(a, b)
