@@ -28,9 +28,9 @@ def complement(G):
     n_nodes = G.order()
     n_edges = n_nodes * (n_nodes - 1) / 2 - G.size()
  
-    cmp_edges = ((u, w) for u in G.nodes()
-		        for w in nset - set(G.neighbours(u))
-		        if w > u)
+    cmp_edges = ((u, v) for u in G.nodes()
+		        for v in nset - set(G.neighbours(u))
+		        if u < v)
     H = make(n_nodes, n_edges, cmp_edges)
     return H
 
@@ -121,8 +121,7 @@ def difference(G, H):
         raise StaticGraphNotEqNodesException(msg)
     
     edges = ((u, v) for u in G.nodes()
-                    for v in set(G.neighbours(u))
-                    if v not in set(H.neighbours(u))
+                    for v in set(G.neighbours(u)) - set(H.neighbours(u))
                     if u < v)
     D = make(G.order(), G.size(), edges)
     return D
@@ -152,15 +151,13 @@ def symmetric_difference(G, H):
         raise StaticGraphNotEqNodesException(msg)
 
     diff1 = ((u, v) for u in G.nodes()
-                    for v in set(G.neighbours(u))
-                    if v not in set(H.neighbours(u))
+                    for v in set(G.neighbours(u)) - set(H.neighbours(u))
                     if u < v)
 
     diff2 = ((u, v) for u in H.nodes()
-                    for v in set(H.neighbours(u))
-                    if v not in set(G.neighbours(u))
+                    for v in set(H.neighbours(u)) - set(G.neighbours(u))
                     if u < v)
 
-    edges = ((u, v) for (u, v) in chain(diff1, diff2))
+    edges = chain(diff1, diff2)
     D = make(G.order(), G.size() + H.size(), edges)
     return D

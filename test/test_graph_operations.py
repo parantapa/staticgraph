@@ -24,15 +24,23 @@ def pytest_generate_tests(metafunc):
 
         metafunc.parametrize("testgraph", testgraphs)
 
-def test_invalid_ops():
+    if "mismatch_graph" in metafunc.funcargnames:
+        mismatch_graphs = []
+
+        a = nx.gnp_random_graph(100, 0.1)
+        b = nx.gnp_random_graph(150, 0.1)
+        c = sg.graph.make(a.order(), a.size(), a.edges_iter())
+        d = sg.graph.make(b.order(), b.size(), b.edges_iter())
+        mismatch_graphs.append((c, d))
+
+        metafunc.parametrize("mismatch_graph", mismatch_graphs)
+
+def test_invalid_ops(mismatch_graph):
     """
-    To Ensure that proper exceptions are raised in case of invalid conditions
-    during function calls
+    Test failure of graph operations on graphs with different orders
     """
-    a = nx.gnp_random_graph(100, 0.1)
-    b = nx.gnp_random_graph(150, 0.1)
-    c = sg.graph.make(a.order(), a.size(), a.edges_iter())
-    d = sg.graph.make(b.order(), b.size(), b.edges_iter())
+
+    c, d = mismatch_graph
 
     with pytest.raises(sg.exceptions.StaticGraphNotEqNodesException):
         sg.graph_operations.union(c, d)
@@ -46,7 +54,6 @@ def test_invalid_ops():
     with pytest.raises(sg.exceptions.StaticGraphNotEqNodesException):
         sg.graph_operations.symmetric_difference(c, d)
 
-
 def graph_equals(a, b):
     """
     Asserting the Equality of two Graphs
@@ -55,6 +62,7 @@ def graph_equals(a, b):
     x = sorted(a.nodes_iter())
     y = sorted(b.nodes())
     assert x == y
+    
     x = sorted(a.edges_iter())
     y = sorted(b.edges())
     assert x == y
