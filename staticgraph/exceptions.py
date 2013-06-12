@@ -8,6 +8,12 @@ class StaticGraphException(Exception):
 
 class StaticGraphNotEqNodesException(StaticGraphException):
     """
-    Subclass of StaticGraphException class to check equality
-    between node sets of two graphs
+    Subclass of StaticGraphException for
+    inequality between node sets of two graphs
+    """
+
+class StaticGraphNodeAbsentException(StaticGraphException):
+    """
+    Subclass of StaticGraphException class for
+    absence of a specific node.
     """
