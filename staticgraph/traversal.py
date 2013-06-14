@@ -98,15 +98,17 @@ def traverse_dfs(G, s):
     res[1, 0] = stack[1, top] = -1
     
     while top >= 0:
-        u = stack[top]
+        u = stack[0, top]
         start = G.n_indptr[u]
         stop  = G.n_indptr[u + 1]
         for v in imap(int, G.n_indices[start:stop]):
             if visited[1, v] == 0:
                 visited[1, v] = 1
                 top = top + 1
-                res[0, index] = stack[0, top] = v
-                res[1, index] = stack[1, top] = u
+                res[0, index] = v
+                stack[0, top] = v
+                res[1, index] = u
+                stack[1, top] = u
                 index = index + 1
                 break
         else:
