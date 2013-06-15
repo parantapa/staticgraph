@@ -21,7 +21,7 @@ def complement(G):
     Notes
     ------
 
-    It is mandatory that G and H be both undirected.
+    It is mandatory that G be undirected.
     """
 
     nset = set(G.nodes())
