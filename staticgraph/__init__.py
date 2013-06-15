@@ -8,7 +8,7 @@ from staticgraph import components
 from staticgraph import graph
 from staticgraph import graph_operations
 from staticgraph import digraph_operations
-from staticgraph import traversal
+from staticgraph import graph_traversal
 from staticgraph import shortest_paths
 from staticgraph import exceptions
 
