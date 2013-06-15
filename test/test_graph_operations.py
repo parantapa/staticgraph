@@ -4,7 +4,6 @@ Tests for Operators of undirected graph structure
 
 import networkx as nx
 import staticgraph as sg
-from numpy.testing import assert_equal
 import pytest
 
 def pytest_generate_tests(metafunc):
