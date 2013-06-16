@@ -26,6 +26,7 @@ def traverse_bfs(G, s):
     ------
 
     It is mandatory that G be directed.
+    Predecessor is -1 for the source node.
     """
     
     if s >= G.order():
@@ -78,6 +79,7 @@ def traverse_dfs(G, s):
     ------
 
     It is mandatory that G be directed.
+    Predecessor is -1 for the source node.
     """
 
     if s >= G.order():

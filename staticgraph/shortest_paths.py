@@ -27,6 +27,8 @@ def single_source_shortest_path(G, s):
     ------
 
     It is mandatory that G be undirected.
+    Precessor is -1 for the source node.
+    distance = -1 implies that the node is unreachable from the source.
     """
     
     if s >= G.order():
