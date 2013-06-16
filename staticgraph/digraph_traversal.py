@@ -56,7 +56,7 @@ def traverse_bfs(G, s):
                 pred[v] = u
                 queue[rear] = v
                 rear = rear + 1
-    return res
+    return res[ :index, :index]
 
 def traverse_dfs(G, s):
     """
@@ -109,4 +109,4 @@ def traverse_dfs(G, s):
                 break
         else:
             top = top - 1  
-    return res
+    return res[ :index, :index]
