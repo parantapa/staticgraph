@@ -3,7 +3,7 @@ Directed Graph Operations
 """
 
 from itertools import chain
-from staticgraph.digraph import make
+from staticgraph.digraph import make, make_deg
 from staticgraph.exceptions import StaticGraphNotEqNodesException
 
 def complement(G):
@@ -30,7 +30,10 @@ def complement(G):
  
     cmp_edges = ((u, v) for u in G.nodes()
 		        for v in nset - set(G.successors(u)))
-    H = make(n_nodes, n_edges, cmp_edges)
+    deg = make_deg(n_nodes, cmp_edges)
+    cmp_edges = ((u, v) for u in G.nodes()
+		        for v in nset - set(G.successors(u)))
+    H = make(n_nodes, n_edges, cmp_edges, deg)
     return H
 
 def union(G, H):
@@ -56,10 +59,13 @@ def union(G, H):
         msg = "Node sets of the two directed graphs are not equal!"
         raise StaticGraphNotEqNodesException(msg)
 
+    n_nodes = G.order()
     edges = ((u, v) for u in G.nodes()
 		    for v in chain(G.successors(u), H.successors(u)))
-                    
-    GC = make(G.order(), G.size() + H.size(), edges)
+    deg = make_deg(n_nodes, edges)                
+    edges = ((u, v) for u in G.nodes()
+		    for v in chain(G.successors(u), H.successors(u)))
+    GC = make(n_nodes, G.size() + H.size(), edges, deg)
     return GC
 
 def intersection(G, H):
@@ -87,10 +93,13 @@ def intersection(G, H):
         msg = "Node sets of the two directed graphs are not equal!"
         raise StaticGraphNotEqNodesException(msg) 
    
+    n_nodes = G.order()
     edges = ((u, v) for u in G.nodes()
                     for v in set(G.successors(u)) & set(H.successors(u)))
-        
-    GH = make(G.order(), G.size(), edges)
+    deg = make_deg(n_nodes, edges)    
+    edges = ((u, v) for u in G.nodes()
+                    for v in set(G.successors(u)) & set(H.successors(u)))
+    GH = make(n_nodes, G.size(), edges, deg)
     return GH
 
 def difference(G, H):
@@ -117,9 +126,13 @@ def difference(G, H):
         msg = "Node sets of the two directed graphs are not equal!"
         raise StaticGraphNotEqNodesException(msg)
     
+    n_nodes = G.order()
     edges = ((u, v) for u in G.nodes()
                     for v in set(G.successors(u)) - set(H.successors(u)))
-    D = make(G.order(), G.size(), edges)
+    deg = make_deg(n_nodes, edges)
+    edges = ((u, v) for u in G.nodes()
+                    for v in set(G.successors(u)) - set(H.successors(u)))
+    D = make(n_nodes, G.size(), edges, deg)
     return D
 
 def symmetric_difference(G, H):
@@ -146,12 +159,22 @@ def symmetric_difference(G, H):
         msg = "Node sets of the two directed graphs are not equal!"
         raise StaticGraphNotEqNodesException(msg)
 
+    n_nodes = G.order()
     diff1 = ((u, v) for u in G.nodes()
                     for v in set(G.successors(u)) - set(H.successors(u)))
 
     diff2 = ((u, v) for u in H.nodes()
                     for v in set(H.successors(u)) - set(G.successors(u)))
-
+    
     edges = chain(diff1, diff2)
-    D = make(G.order(), G.size() + H.size(), edges)
+    deg = make_deg(n_nodes, edges)
+    
+    diff1 = ((u, v) for u in G.nodes()
+                    for v in set(G.successors(u)) - set(H.successors(u)))
+
+    diff2 = ((u, v) for u in H.nodes()
+                    for v in set(H.successors(u)) - set(G.successors(u)))
+    
+    edges = chain(diff1, diff2)
+    D = make(n_nodes, G.size() + H.size(), edges, deg)
     return D

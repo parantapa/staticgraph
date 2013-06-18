@@ -15,29 +15,34 @@ def pytest_generate_tests(metafunc):
 
         # Complete graph of 100 vertices
         a = nx.complete_graph(100, create_using=nx.DiGraph())
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         # Complete graph of 100 vertices with 100 dangling vertices
         a = nx.complete_graph(100, create_using=nx.DiGraph())
         a.add_nodes_from(range(200))
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         # Path graph of 100 vertices
         a = nx.path_graph(100, create_using=nx.DiGraph())
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         # Path graph of 100 vertices with 100 dangling vertices
         a = nx.path_graph(100, create_using=nx.DiGraph())
         a.add_nodes_from(range(200))
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         # Random graph of 100 vertices
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)

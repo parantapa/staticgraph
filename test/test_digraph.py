@@ -16,17 +16,20 @@ def pytest_generate_tests(metafunc):
 
         # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
-
+        
         # 100 vertex random graph with parallel edges
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), 2 * a.size(), a.edges() + a.edges())
+        deg = sg.digraph.make_deg(a.order(), a.edges() + a.edges())
+        b = sg.digraph.make(a.order(),  2 * a.size(), a.edges() + a.edges(), deg)
         testgraphs.append((a, b))
-
+        
         # 100 vertex random graph with overestimated edge count
         a = nx.gnp_random_graph(100, 0.1, directed=True)
-        b = sg.digraph.make(a.order(), 2 * a.size(), a.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        b = sg.digraph.make(a.order(), 2 * a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
 
         metafunc.parametrize("testgraph", testgraphs)

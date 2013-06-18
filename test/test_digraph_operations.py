@@ -17,8 +17,10 @@ def pytest_generate_tests(metafunc):
         # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1, directed=True)
         b = nx.gnp_random_graph(100, 0.1, directed=True)
-        c = sg.digraph.make(a.order(), a.size(), a.edges_iter())
-        d = sg.digraph.make(b.order(), b.size(), b.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        c = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
+        deg = sg.digraph.make_deg(b.order(), b.edges_iter())
+        d = sg.digraph.make(b.order(), b.size(), b.edges_iter(), deg)
         testgraphs.append((a, b, c, d))
 
         metafunc.parametrize("testgraph", testgraphs)
@@ -28,8 +30,10 @@ def pytest_generate_tests(metafunc):
 
         a = nx.gnp_random_graph(100, 0.1, directed=True)
         b = nx.gnp_random_graph(150, 0.1, directed=True)
-        c = sg.digraph.make(a.order(), a.size(), a.edges_iter())
-        d = sg.digraph.make(b.order(), b.size(), b.edges_iter())
+        deg = sg.digraph.make_deg(a.order(), a.edges_iter())
+        c = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
+        deg = sg.digraph.make_deg(b.order(), b.edges_iter())
+        d = sg.digraph.make(b.order(), b.size(), b.edges_iter(), deg)
         mismatch_graphs.append((c, d))
 
         metafunc.parametrize("mismatch_graph", mismatch_graphs)

@@ -3,7 +3,7 @@ Undirected Graph Operations
 """
 
 from itertools import chain
-from staticgraph.graph import make
+from staticgraph.graph import make, make_deg
 from staticgraph.exceptions import StaticGraphNotEqNodesException
 
 def complement(G):
@@ -31,7 +31,11 @@ def complement(G):
     cmp_edges = ((u, v) for u in G.nodes()
 		        for v in nset - set(G.neighbours(u))
 		        if u < v)
-    H = make(n_nodes, n_edges, cmp_edges)
+    deg = make_deg(n_nodes, cmp_edges)
+    cmp_edges = ((u, v) for u in G.nodes()
+		        for v in nset - set(G.neighbours(u))
+		        if u < v)
+    H = make(n_nodes, n_edges, cmp_edges, deg)
     return H
 
 def union(G, H):
@@ -60,8 +64,13 @@ def union(G, H):
     edges = ((u, v) for u in G.nodes()
 		    for v in chain(G.neighbours(u), H.neighbours(u))
                     if u < v)
-                    
-    GC = make(G.order(), G.size() + H.size(), edges)
+
+    deg = make_deg(G.order(), edges)               
+    edges = ((u, v) for u in G.nodes()
+		    for v in chain(G.neighbours(u), H.neighbours(u))
+                    if u < v)
+
+    GC = make(G.order(), G.size() + H.size(), edges, deg)
     return GC
 
 def intersection(G, H):
@@ -93,7 +102,14 @@ def intersection(G, H):
                     for v in set(G.neighbours(u)) & set(H.neighbours(u))
                     if u < v)
         
-    GH = make(G.order(), G.size(), edges)
+    deg = make_deg(G.order(), edges)
+    print 'deg=', deg
+    
+    edges = ((u, v) for u in G.nodes()
+                    for v in set(G.neighbours(u)) & set(H.neighbours(u))
+                    if u < v)
+    GH = make(G.order(), G.size(), edges, deg)
+    print GH.size()
     return GH
 
 def difference(G, H):
@@ -123,7 +139,11 @@ def difference(G, H):
     edges = ((u, v) for u in G.nodes()
                     for v in set(G.neighbours(u)) - set(H.neighbours(u))
                     if u < v)
-    D = make(G.order(), G.size(), edges)
+    deg = make_deg(G.order(), edges)
+    edges = ((u, v) for u in G.nodes()
+                    for v in set(G.neighbours(u)) - set(H.neighbours(u))
+                    if u < v)
+    D = make(G.order(), G.size(), edges, deg)
     return D
 
 def symmetric_difference(G, H):
@@ -159,5 +179,16 @@ def symmetric_difference(G, H):
                     if u < v)
 
     edges = chain(diff1, diff2)
-    D = make(G.order(), G.size() + H.size(), edges)
+    
+    deg = make_deg(G.order(), edges)
+    diff1 = ((u, v) for u in G.nodes()
+                    for v in set(G.neighbours(u)) - set(H.neighbours(u))
+                    if u < v)
+
+    diff2 = ((u, v) for u in H.nodes()
+                    for v in set(H.neighbours(u)) - set(G.neighbours(u))
+                    if u < v)
+
+    edges = chain(diff1, diff2)
+    D = make(G.order(), G.size() + H.size(), edges, deg)
     return D

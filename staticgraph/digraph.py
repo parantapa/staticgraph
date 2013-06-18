@@ -197,12 +197,11 @@ def make(n_nodes, n_edges, edges, deg):
     deg     - a numpy uint32 array containing the degree of all vertices.
     """
 
-    p_deg, s_deg = deg
     n_nodes = int(n_nodes)
     n_edges = int(n_edges)
 
     # Create and Compact the predecessor edgelist
-    p_indptr, p_indices, s_indptr, s_indices = edgelist.make_comp(n_nodes, n_edges, edges, p_deg, s_deg)
+    p_indptr, p_indices, s_indptr, s_indices = edgelist.make_comp(n_nodes, n_edges, edges, deg)
 
     # Create the graph
     G = DiGraph(n_nodes, len(s_indices), p_indptr, p_indices, s_indptr, s_indices)
