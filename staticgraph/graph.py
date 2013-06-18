@@ -8,7 +8,7 @@ import cPickle as pk
 from itertools import imap
 
 import numpy as np
-import staticgraph.edgelist as edgelist
+import staticgraph.graph_edgelist as edgelist
 
 class Graph(object):
     """
@@ -147,16 +147,14 @@ def save(store, G):
     do_save("n_indptr.npy", G.n_indptr)
     do_save("n_indices.npy", G.n_indices)
 
-def _both_edge(edges):
+def make_deg(n_nodes, edges):
     """
-    Yield both u, v and v, u edge for every edge in edges.
+    Return the degree distribution of the Graph
     """
 
-    for u, v in edges:
-        yield u, v
-        yield v, u
+    return edgelist.make_deg(n_nodes, edges)
 
-def make(n_nodes, n_edges, edges):
+def make(n_nodes, n_edges, edges, deg):
     """
     Make a Graph.
 
@@ -164,18 +162,15 @@ def make(n_nodes, n_edges, edges):
               The graph contains all nodes form 0 to (n_nodes - 1)
     n_edges - an over estimate of the number of edges
     edges   - an iterable producing the edges of the graph
+    deg     - a numpy uint32 array containing the degree of all vertices.
     """
 
     n_nodes = int(n_nodes)
     n_edges = int(n_edges)
-    edges   = _both_edge(edges)
 
-    # Create the edgelist
-    es = edgelist.make(n_nodes, 2 * n_edges, edges)
-
-    # Compact the edgelist
-    n_indptr, n_indices = edgelist.compact(n_nodes, es)
+    # Create and Compact the edgelist
+    n_indptr, n_indices = edgelist.make_comp(n_nodes, n_edges, edges, deg)
 
     # Create the graph
-    G = Graph(n_nodes, len(es) / 2, n_indptr, n_indices)
+    G = Graph(n_nodes, len(n_indices) / 2, n_indptr, n_indices)
     return G

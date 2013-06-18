@@ -15,17 +15,17 @@ def pytest_generate_tests(metafunc):
         testgraphs = []
 
         # 100 vertex random graph
-        a = nx.gnp_random_graph(100, 0.1)
+        a = nx.gnp_random_graph(10, 0.1)
         b = sg.graph.make(a.order(), a.size(), a.edges_iter())
         testgraphs.append((a, b))
 
         # 100 vertex random graph with parallel edges
-        a = nx.gnp_random_graph(100, 0.1)
+        a = nx.gnp_random_graph(10, 0.1)
         b = sg.graph.make(a.order(), 2 * a.size(), a.edges() + a.edges())
         testgraphs.append((a, b))
 
         # 100 vertex random graph with overestimated edge count
-        a = nx.gnp_random_graph(100, 0.1)
+        a = nx.gnp_random_graph(10, 0.1)
         b = sg.graph.make(a.order(), 2 * a.size(), a.edges_iter())
         testgraphs.append((a, b))
 

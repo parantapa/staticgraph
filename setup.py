@@ -4,9 +4,6 @@ from Cython.Distutils import build_ext
 from numpy import get_include
 
 ext_modules = [
-    Extension("staticgraph.edgelist",
-              ["staticgraph/edgelist.pyx"],
-              include_dirs=[get_include()]),
     Extension("staticgraph.links",
               ["staticgraph/links.pyx"],
               include_dirs=[get_include()]),

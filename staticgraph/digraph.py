@@ -10,7 +10,7 @@ import cPickle as pk
 from itertools import imap
 
 import numpy as np
-import staticgraph.edgelist as edgelist
+import staticgraph.digraph_edgelist as edgelist
 
 class DiGraph(object):
     """
@@ -178,7 +178,15 @@ def save(store, G):
     do_save("s_indptr.npy", G.s_indptr)
     do_save("s_indices.npy", G.s_indices)
 
-def make(n_nodes, n_edges, edges):
+
+def make_deg(n_nodes, edges):
+    """
+    Return the degree distribution of the DiGraph
+    """
+
+    return edgelist.make_deg(n_nodes, edges)
+
+def make(n_nodes, n_edges, edges, deg):
     """
     Make a DiGraph.
 
@@ -186,25 +194,16 @@ def make(n_nodes, n_edges, edges):
               The graph contains all nodes form 0 to (n_nodes - 1)
     n_edges - an over estimate of the number of edges
     edges   - an iterable producing the edges of the graph
+    deg     - a numpy uint32 array containing the degree of all vertices.
     """
 
+    p_deg, s_deg = deg
     n_nodes = int(n_nodes)
     n_edges = int(n_edges)
 
-    # Create the edgelist
-    es = edgelist.make(n_nodes, n_edges, edges)
-
-    # Compact the edgelist
-    s_indptr, s_indices = edgelist.compact(n_nodes, es)
-
-    # Swap and sort for getting compact predecessors
-    edgelist.swap(es)
-    es.sort()
-
-    # Compact the edgelist
-    p_indptr, p_indices = edgelist.compact(n_nodes, es)
+    # Create and Compact the predecessor edgelist
+    p_indptr, p_indices, s_indptr, s_indices = edgelist.make_comp(n_nodes, n_edges, edges, p_deg, s_deg)
 
     # Create the graph
-    G = DiGraph(n_nodes, len(es), p_indptr, p_indices, s_indptr, s_indices)
+    G = DiGraph(n_nodes, len(s_indices), p_indptr, p_indices, s_indptr, s_indices)
     return G
-
