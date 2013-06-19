@@ -2,7 +2,7 @@
 #cython: boundscheck=False
 
 """
-Routines for fast edgelist manipulation.
+Routines for fast edgelist manipulation in undirected weighted simple graph.
 """
 
 import numpy as np

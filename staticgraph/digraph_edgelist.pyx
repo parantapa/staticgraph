@@ -1,7 +1,7 @@
 #cython: wraparound=False
 #cython: boundscheck=False
 """
-Routines for fast edgelist manipulation.
+Routines for fast edgelist manipulation in directed unweighted simple graph.
 """
 
 import numpy as np

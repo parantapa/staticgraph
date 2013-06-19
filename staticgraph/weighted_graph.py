@@ -1,5 +1,5 @@
 """
-Simple memory efficient undirected graph.
+Simple memory efficient weighted undirected graph.
 """
 
 from os import mkdir
@@ -90,6 +90,9 @@ class Graph(object):
                     yield u, v, self.weight(u, v)
 
     def weight(self, u, v):
+        """
+        Return weight of the edge (u,v) if it exists
+        """
         start = self.n_indptr[u]
         stop = self.n_indptr[u + 1]
         for i in xrange(start, stop):
