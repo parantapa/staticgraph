@@ -1,3 +1,5 @@
+#cython: wraparound=False
+#cython: boundscheck=False
 
 """
 Routines for fast edgelist manipulation.
@@ -43,10 +45,8 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray deg):
     indices = np.empty(2 * n_edges, "u4")
 
     indptr[0]  = 0
-    #indptr[1:] = np.cumsum(deg)
     for i in xrange(1, n_nodes + 1):
         indptr[i] = deg[i - 1] + indptr[i - 1]
-    #idxs = np.array(indptr[:-1], "u8")
     idxs = np.empty(n_nodes, "u8")
     for i in xrange(n_nodes):
         idxs[i] = indptr[i]
