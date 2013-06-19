@@ -172,5 +172,5 @@ def make(n_nodes, n_edges, edges, deg):
     n_indptr, n_indices = edgelist.make_comp(n_nodes, n_edges, edges, deg)
 
     # Create the graph
-    G = Graph(n_nodes, len(n_indices)/ 2, n_indptr, n_indices)
+    G = Graph(n_nodes, len(n_indices) / 2, n_indptr, n_indices)
     return G
