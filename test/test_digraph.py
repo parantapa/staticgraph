@@ -1,5 +1,5 @@
 """
-Tests for directed graph structure
+Tests for directed graph structure.
 """
 
 import networkx as nx
@@ -8,7 +8,7 @@ from numpy.testing import assert_equal
 
 def pytest_generate_tests(metafunc):
     """
-    Generate the arguments for test funcs
+    Generate the arguments for test functions.
     """
 
     if "testgraph" in metafunc.funcargnames:
@@ -36,7 +36,7 @@ def pytest_generate_tests(metafunc):
 
 def test_nodes(testgraph):
     """
-    Test the nodes of the graph are same
+    Test the nodes of the graph.
     """
 
     a = sorted(testgraph[0].nodes_iter())
@@ -45,7 +45,7 @@ def test_nodes(testgraph):
 
 def test_edges(testgraph):
     """
-    Test the edges are the same
+    Test the edges of the graph.
     """
 
     a = sorted(testgraph[0].edges_iter())
@@ -54,7 +54,7 @@ def test_edges(testgraph):
 
 def test_successors(testgraph):
     """
-    Test the successors for every node
+    Test the successors for every node.
     """
 
     for u in testgraph[0].nodes_iter():
@@ -64,7 +64,7 @@ def test_successors(testgraph):
 
 def test_predecessors(testgraph):
     """
-    Test the successors for every node
+    Test the predecessors for every node.
     """
 
     for u in testgraph[0].nodes_iter():
@@ -74,7 +74,7 @@ def test_predecessors(testgraph):
 
 def test_basics(testgraph):
     """
-    Test some basic stuff
+    Test basic graph statistics.
     """
 
     assert testgraph[0].order() == testgraph[1].order()
@@ -86,7 +86,7 @@ def test_basics(testgraph):
 
 def test_load_save(tmpdir, testgraph):
     """
-    Test if persistance is working correctly
+    Test if persistance is working correctly.
     """
 
     a = testgraph[1]
