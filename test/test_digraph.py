@@ -11,85 +11,85 @@ def pytest_generate_tests(metafunc):
     Generate the arguments for test functions.
     """
 
-    if "testgraph" in metafunc.funcargnames:
-        testgraphs = []
+    if "digraph" in metafunc.funcargnames:
+        digraphs = []
 
         # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1, directed=True)
         deg = sg.digraph.make_deg(a.order(), a.edges_iter())
         b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
-        testgraphs.append((a, b))
+        digraphs.append((a, b))
         
         # 100 vertex random graph with parallel edges
         a = nx.gnp_random_graph(100, 0.1, directed=True)
         deg = sg.digraph.make_deg(a.order(), a.edges() + a.edges())
         b = sg.digraph.make(a.order(),  2 * a.size(), a.edges() + a.edges(), deg)
-        testgraphs.append((a, b))
+        digraphs.append((a, b))
         
         # 100 vertex random graph with overestimated edge count
         a = nx.gnp_random_graph(100, 0.1, directed=True)
         deg = sg.digraph.make_deg(a.order(), a.edges_iter())
         b = sg.digraph.make(a.order(), 2 * a.size(), a.edges_iter(), deg)
-        testgraphs.append((a, b))
+        digraphs.append((a, b))
 
-        metafunc.parametrize("testgraph", testgraphs)
+        metafunc.parametrize("digraph", digraphs)
 
-def test_nodes(testgraph):
+def test_nodes(digraph):
     """
     Test the nodes of the graph.
     """
 
-    a = sorted(testgraph[0].nodes_iter())
-    b = sorted(testgraph[1].nodes())
+    a = sorted(digraph[0].nodes_iter())
+    b = sorted(digraph[1].nodes())
     assert a == b
 
-def test_edges(testgraph):
+def test_edges(digraph):
     """
     Test the edges of the graph.
     """
 
-    a = sorted(testgraph[0].edges_iter())
-    b = sorted(testgraph[1].edges())
+    a = sorted(digraph[0].edges_iter())
+    b = sorted(digraph[1].edges())
     assert a == b
 
-def test_successors(testgraph):
+def test_successors(digraph):
     """
     Test the successors for every node.
     """
 
-    for u in testgraph[0].nodes_iter():
-        a = sorted(testgraph[0].successors_iter(u))
-        b = sorted(testgraph[1].successors(u))
+    for u in digraph[0].nodes_iter():
+        a = sorted(digraph[0].successors_iter(u))
+        b = sorted(digraph[1].successors(u))
         assert (u, a) == (u, b)
 
-def test_predecessors(testgraph):
+def test_predecessors(digraph):
     """
     Test the predecessors for every node.
     """
 
-    for u in testgraph[0].nodes_iter():
-        a = sorted(testgraph[0].predecessors_iter(u))
-        b = sorted(testgraph[1].predecessors(u))
+    for u in digraph[0].nodes_iter():
+        a = sorted(digraph[0].predecessors_iter(u))
+        b = sorted(digraph[1].predecessors(u))
         assert (u, a) == (u, b)
 
-def test_basics(testgraph):
+def test_basics(digraph):
     """
     Test basic graph statistics.
     """
 
-    assert testgraph[0].order() == testgraph[1].order()
-    assert testgraph[0].size() == testgraph[1].size()
+    assert digraph[0].order() == digraph[1].order()
+    assert digraph[0].size() == digraph[1].size()
 
-    for u in testgraph[0].nodes_iter():
-        assert testgraph[0].in_degree(u) == testgraph[1].in_degree(u)
-        assert testgraph[0].out_degree(u) == testgraph[1].out_degree(u)
+    for u in digraph[0].nodes_iter():
+        assert digraph[0].in_degree(u) == digraph[1].in_degree(u)
+        assert digraph[0].out_degree(u) == digraph[1].out_degree(u)
 
-def test_load_save(tmpdir, testgraph):
+def test_load_save(tmpdir, digraph):
     """
     Test if persistance is working correctly.
     """
 
-    a = testgraph[1]
+    a = digraph[1]
     
     sg.digraph.save(tmpdir.strpath, a)
     b = sg.digraph.load(tmpdir.strpath)
