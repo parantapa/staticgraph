@@ -49,7 +49,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
     indices = np.empty(2 * n_edges, "u4")
     weight = np.empty(2 * n_edges, "f8")
 
-    indptr[0]  = 0
+    indptr[0] = 0
     for i in xrange(1, n_nodes + 1):
         indptr[i] = deg[i - 1] + indptr[i - 1]
     idxs = np.empty(n_nodes, "u8")
@@ -86,7 +86,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         sort_indices = np.array(indices[start:stop].argsort(), dtype = "u4")
         for j in xrange (start, stop):
             n = start + sort_indices[j - start]
-            temp = weight [j]
+            temp = weight[j]
             weight[j] = weight[n]
             weight[n] = temp
             tmp = indices[j]

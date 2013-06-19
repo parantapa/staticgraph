@@ -1,11 +1,12 @@
 #cython: wraparound=False
 #cython: boundscheck=False
+
 """
-Routines for fast edgelist manipulation in directed unweighted simple graph.
+Routines for fast edgelist manipulation in directed weighted simple graph.
 """
 
 import numpy as np
-from numpy cimport uint64_t, uint32_t, ndarray
+from numpy cimport uint64_t, uint32_t, float64_t, ndarray
 
 def make_deg(size_t n_nodes, object edges):
     """
@@ -17,11 +18,12 @@ def make_deg(size_t n_nodes, object edges):
         ndarray[uint32_t] p_deg
         ndarray[uint32_t] s_deg
         size_t i, j
+        float64_t w
 
     p_deg = np.zeros(n_nodes, "u4")
     s_deg = np.zeros(n_nodes, "u4")
 
-    for u, v in edges:
+    for u, v, w in edges:
         if u == v:
             continue
         i, j = u, v
@@ -30,26 +32,31 @@ def make_deg(size_t n_nodes, object edges):
     
     return p_deg, s_deg
 
-def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] p_deg, ndarray[uint32_t] s_deg):
+def make_comp(size_t n_nodes, size_t n_edges, object edges, 
+              ndarray[uint32_t] p_deg, ndarray[uint32_t] s_deg):
     """
     Create the compressed arrays for edgelist.
     """
 
     cdef:
-        uint32_t u, v
-        uint64_t start, stop
-        size_t i, j, n, del_ctr, e
+        uint32_t u, v, tmp
+        uint64_t start, stop, e
+        float64_t w, temp
+        size_t i, j, n, del_ctr
         ndarray[uint64_t] p_indptr
         ndarray[uint32_t] p_indices
         ndarray[uint64_t] p_idxs
         ndarray[uint64_t] s_indptr
         ndarray[uint32_t] s_indices
         ndarray[uint64_t] s_idxs
+        ndarray[float64_t] weights
+        ndarray[uint32_t] sort_indices
 
     p_indptr = np.empty(n_nodes + 1, "u8")
     p_indices = np.empty(n_edges, "u4")
     s_indptr = np.empty(n_nodes + 1, "u8")
     s_indices = np.empty(n_edges, "u4")
+    weights = np.empty(n_edges, "f8")
 
     p_indptr[0] = s_indptr[0] = 0
     for i in xrange(1, n_nodes + 1):
@@ -63,7 +70,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] p_
 
     #Creating the edgelist
     e = 0
-    for u, v in edges:
+    for u, v, w in edges:
         if e == n_edges:
             raise ValueError("More edges found than allocated for")
         if not u < n_nodes:
@@ -77,32 +84,65 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] p_
         i, j = u, v
 
         s_indices[s_idxs[i]] = v
-        s_idxs[i] += 1
-        
         p_indices[p_idxs[j]] = u
+        weights[s_idxs[i]] = w
+        s_idxs[i] += 1
         p_idxs[j] += 1
 
         e += 1
-    
+
     #Sorting the edgelist
     for i in xrange(n_nodes):
         start = p_indptr[i]
         stop  = p_indptr[i + 1]
         p_indices[start:stop].sort()
+
         start = s_indptr[i]
         stop  = s_indptr[i + 1]
-        s_indices[start:stop].sort()
-
+        sort_indices = np.array(s_indices[start:stop].argsort(), dtype = "u4")
+        for j in xrange (start, stop):
+            n = start + sort_indices[j - start]
+            temp = weights[j]
+            weights[j] = weights[n]
+            weights[n] = temp
+            tmp = s_indices[j]
+            s_indices[j] = s_indices[n]
+            s_indices[n] = tmp
+      
     # Eliminating parallel edges
 
-    i, j, del_ctr = 0, 1, 0  
+    i, j, del_ctr = 0, 1, 0
+    for n in xrange(n_nodes):
+        if(s_indptr[n] == s_indptr[n + 1]):
+            continue
+        s_indices[i] = s_indices[i + del_ctr]
+        weights[i] = weights[i + del_ctr]
+        stop  = s_indptr[n + 1]
+        while j < stop:
+            if s_indices[i] == s_indices[j]:
+                j += 1
+                del_ctr += 1
+            else:
+                s_indices[i + 1] = s_indices[j]
+                weights[i + 1] = weights[j]
+                i += 1
+                j += 1
+                
+        s_indptr[n + 1] = i + 1
+        i += 1
+        j += 1
+
+    s_indices = np.resize(s_indices, e - del_ctr)
+    weights = np.resize(weights, e - del_ctr)
+    
+    i, j, del_ctr = 0, 1, 0
     for n in xrange(n_nodes):
         if(p_indptr[n] == p_indptr[n + 1]):
             continue
         p_indices[i] = p_indices[i + del_ctr]
         stop  = p_indptr[n + 1]
         while j < stop:
-            if p_indices[i] == p_indices[j]:
+            if s_indices[i] == s_indices[j]:
                 j += 1
                 del_ctr += 1
             else:
@@ -113,26 +153,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] p_
         p_indptr[n + 1] = i + 1
         i += 1
         j += 1
+
     p_indices = np.resize(p_indices, e - del_ctr)
-    
-    i, j, del_ctr = 0, 1, 0  
-    for n in xrange(n_nodes):
-        if(s_indptr[n] == s_indptr[n + 1]):
-            continue
-        s_indices[i] = s_indices[i + del_ctr]
-        stop  = s_indptr[n + 1]
-        while j < stop:
-            if s_indices[i] == s_indices[j]:
-                j += 1
-                del_ctr += 1
-            else:
-                s_indices[i + 1] = s_indices[j]
-                i += 1
-                j += 1
-                
-        s_indptr[n + 1] = i + 1
-        i += 1
-        j += 1
-    s_indices = np.resize(s_indices, e - del_ctr)
-    
-    return p_indptr, p_indices, s_indptr, s_indices
+
+    return p_indptr, p_indices, s_indptr, s_indices, weights
