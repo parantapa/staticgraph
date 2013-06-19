@@ -29,6 +29,45 @@ def make_deg(size_t n_nodes, object edges):
 
     return deg
 
+cdef void remove_dups(size_t n_nodes, ndarray[uint64_t] indptr,
+                      ndarray[uint32_t] indices):
+    """
+    Remove the duplicate edges.
+    """
+
+    cdef:
+        uint32_t u
+        uint64_t stop
+        size_t i, j, ndups
+
+    # Delete any duplicate edges
+    i, j, ndups = 0, 1, 0
+    for u in range(n_nodes):
+        # Ignore nodes with no neighbors
+        if indptr[u] == indptr[u + 1]:
+            continue
+
+        # Copy the first element in place
+        indices[i] = indices[i + ndups]
+
+        # For the rest of edges check if next edge is duplicate
+        # If so then skip it othewise move it to proper place
+        stop  = indptr[u + 1]
+        while j < stop:
+            if indices[i] == indices[j]:
+                j += 1
+                ndups += 1
+            else:
+                indices[i + 1] = indices[j]
+                i += 1
+                j += 1
+
+        # Since some edges are now gone move the end of the current
+        # neighbor set in place
+        indptr[u + 1] = i + 1
+        i += 1
+        j += 1
+
 def make_comp(size_t n_nodes, size_t n_edges, object edges,
               ndarray[uint32_t] deg):
     """
@@ -38,7 +77,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
     cdef:
         uint32_t u, v
         uint64_t start, stop
-        size_t i, j, n, ndups
+        size_t i, j, n
         ndarray[uint64_t] indptr
         ndarray[uint32_t] indices
         ndarray[uint64_t] nextv
@@ -92,33 +131,8 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
         if stop - start > 1:
             indices[start:stop].sort()
 
-    # Delete any duplicate edges
-    i, j, ndups = 0, 1, 0
-    for u in range(n_nodes):
-        # Ignore nodes with no neighbors
-        if indptr[u] == indptr[u + 1]:
-            continue
-
-        # Copy the first element in place
-        indices[i] = indices[i + ndups]
-
-        # For the rest of edges check if next edge is duplicate
-        # If so then skip it othewise move it to proper place
-        stop  = indptr[u + 1]
-        while j < stop:
-            if indices[i] == indices[j]:
-                j += 1
-                ndups += 1
-            else:
-                indices[i + 1] = indices[j]
-                i += 1
-                j += 1
-
-        # Since some edges are now gone move the end of the current
-        # neighbor set in place
-        indptr[u + 1] = i + 1
-        i += 1
-        j += 1
+    # Remove the duplicate edges
+    remove_dups(n_nodes, indptr, indices)
 
     # Resize the indices array in place
     indices.resize(indptr[n_nodes], refcheck=False)
