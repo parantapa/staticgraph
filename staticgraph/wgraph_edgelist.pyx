@@ -42,12 +42,12 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         ndarray[uint64_t] indptr
         ndarray[uint32_t] indices
         ndarray[uint64_t] idxs
-        ndarray[float64_t] weight
+        ndarray[float64_t] weights
         ndarray[uint32_t] sort_indices
 
     indptr = np.empty(n_nodes + 1, "u8")
     indices = np.empty(2 * n_edges, "u4")
-    weight = np.empty(2 * n_edges, "f8")
+    weights = np.empty(2 * n_edges, "f8")
 
     indptr[0] = 0
     for i in xrange(1, n_nodes + 1):
@@ -73,7 +73,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
 
         indices[idxs[i]] = v
         indices[idxs[j]] = u
-        weight[idxs[i]] = weight[idxs[j]] = w
+        weights[idxs[i]] = weights[idxs[j]] = w
         idxs[i] += 1
         idxs[j] += 1
 
@@ -86,9 +86,9 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         sort_indices = np.array(indices[start:stop].argsort(), dtype = "u4")
         for j in xrange (start, stop):
             n = start + sort_indices[j - start]
-            temp = weight[j]
-            weight[j] = weight[n]
-            weight[n] = temp
+            temp = weights[j]
+            weights[j] = weights[n]
+            weights[n] = temp
             tmp = indices[j]
             indices[j] = indices[n]
             indices[n] = tmp
@@ -100,7 +100,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         if(indptr[n] == indptr[n + 1]):
             continue
         indices[i] = indices[i + del_ctr]
-        weight[i] = weight[i + del_ctr]
+        weights[i] = weights[i + del_ctr]
         stop  = indptr[n + 1]
         while j < stop:
             if indices[i] == indices[j]:
@@ -108,7 +108,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
                 del_ctr += 1
             else:
                 indices[i + 1] = indices[j]
-                weight[i + 1] = weight[j]
+                weights[i + 1] = weights[j]
                 i += 1
                 j += 1
                 
@@ -117,5 +117,5 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         j += 1
 
     indices = np.resize(indices, (2 * e) - del_ctr)
-    weight = np.resize(weight, (2 * e) - del_ctr)
-    return indptr, indices, weight
+    weights = np.resize(weights, (2 * e) - del_ctr)
+    return indptr, indices, weights

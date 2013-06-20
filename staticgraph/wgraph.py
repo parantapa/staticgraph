@@ -8,9 +8,9 @@ import cPickle as pk
 from itertools import imap
 
 import numpy as np
-import staticgraph.weightedgraph_edgelist as edgelist
+import staticgraph.wgraph_edgelist as edgelist
 
-class Graph(object):
+class WGraph(object):
     """
     Simple undirected weighted graph.
 
@@ -134,7 +134,7 @@ def load(store):
     n_indices = do_load("n_indices.npy")
     weights = do_load("weights.npy")
     # Create the graph
-    G = Graph(n_nodes, n_edges, n_indptr, n_indices, weights)
+    G = WGraph(n_nodes, n_edges, n_indptr, n_indices, weights)
     return G
 
 def save(store, G):
@@ -142,7 +142,7 @@ def save(store, G):
     Save the graph to disk.
 
     store - the directory where the graph will be stored
-    G     - the direceted graph
+    G     - the weighted graph
     """
 
     # Create the directory
@@ -164,14 +164,14 @@ def save(store, G):
 
 def make_deg(n_nodes, edges):
     """
-    Return the degree distribution of the Graph
+    Return the degree distribution of the Weighted Graph
     """
 
     return edgelist.make_deg(n_nodes, edges)
 
 def make(n_nodes, n_edges, edges, deg):
     """
-    Make a Graph.
+    Make a Weighted Graph.
 
     n_nodes - # nodes in the graph.
               The graph contains all nodes form 0 to (n_nodes - 1)
@@ -187,5 +187,6 @@ def make(n_nodes, n_edges, edges, deg):
     n_indptr, n_indices, weights = edgelist.make_comp(n_nodes, n_edges, edges, deg)
 
     # Create the graph
-    G = Graph(n_nodes, len(n_indices) / 2, n_indptr, n_indices, weights)
+    G = WGraph(n_nodes, len(n_indices) / 2, n_indptr, n_indices, weights)
     return G
+
