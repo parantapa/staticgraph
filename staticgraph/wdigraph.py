@@ -20,11 +20,12 @@ class WDiGraph(object):
     p_indices - indices for predecessors
     s_indptr  - index pointers for succesors
     s_indices - indices for successors
-    weights   - corresponding weights of edges of graph
+    p_weights - edge weights arranged according to p_indices
+    s_weights - edge weights arranged according to s_indices
     """
 
     def __init__(self, n_nodes, n_edges, p_indptr, p_indices, 
-                               s_indptr, s_indices, weights):
+                  s_indptr, s_indices, p_weights, s_weights):
 
         self.n_nodes   = n_nodes
         self.n_edges   = n_edges
@@ -32,7 +33,8 @@ class WDiGraph(object):
         self.p_indices = p_indices
         self.s_indptr  = s_indptr
         self.s_indices = s_indices
-        self.weights = weights
+        self.p_weights = p_weights
+        self.s_weights = s_weights
 
     @property
     def nbytes(self):
@@ -42,7 +44,8 @@ class WDiGraph(object):
 
         nbytes  = self.n_indptr.nbytes
         nbytes += self.n_indices.nbytes
-        nbytes += self.weights.nbytes
+        nbytes += self.p_weights.nbytes
+        nbytes += self.s_weights.nbytes
         return nbytes
 
     def successors(self, u, weight = False):
@@ -56,16 +59,20 @@ class WDiGraph(object):
             if weight == False:
                 yield  self.s_indices[index]
             else: 
-                yield self.s_indices[index], self.weights[index]
+                yield self.s_indices[index], self.s_weights[index]
 
-    def predecessors(self, u):
+    def predecessors(self, u, weight = False):
         """
         Return iterable for predecessors of node u.
         """
 
         start = self.p_indptr[u]
         stop  = self.p_indptr[u + 1]
-        return imap(int, self.p_indices[start:stop])
+        for index in xrange(start, stop):
+            if weight == False:
+                yield  self.p_indices[index]
+            else: 
+                yield self.p_indices[index], self.p_weights[index]
 
     def in_degree(self, v):
         """
@@ -127,7 +134,7 @@ class WDiGraph(object):
         stop = self.s_indptr[u + 1]
         for i in xrange(start, stop):
             if self.s_indices[i] == v:
-                return self.weights[i]
+                return self.s_weights[i]
         return None
 
     def has_node(self, u):
@@ -164,10 +171,11 @@ def load(store):
     p_indices = do_load("p_indices.npy")
     s_indptr  = do_load("s_indptr.npy")
     s_indices = do_load("s_indices.npy")
-    weights = do_load("weights.npy")
+    p_weights = do_load("p_weights.npy")
+    s_weights = do_load("s_weights.npy")
     # Create the graph
     G = WDiGraph(n_nodes, n_edges, p_indptr, p_indices,
-                          s_indptr, s_indices, weights)
+                 s_indptr, s_indices, p_weights, s_weights)
     
     return G
 
@@ -196,7 +204,8 @@ def save(store, G):
     do_save("p_indices.npy", G.p_indices)
     do_save("s_indptr.npy", G.s_indptr)
     do_save("s_indices.npy", G.s_indices)
-    do_save("weights.npy", G.weights)
+    do_save("p_weights.npy", G.p_weights)
+    do_save("s_weights.npy", G.s_weights)
 
 def make_deg(n_nodes, edges):
     """
@@ -221,8 +230,8 @@ def make(n_nodes, n_edges, edges, deg):
     p_deg, s_deg = deg
 
     # Create and Compact the edgelist
-    p_indptr, p_indices, s_indptr, s_indices, weights = edgelist.make_comp(n_nodes, n_edges, edges, p_deg, s_deg)
+    p_indptr, p_indices, s_indptr, s_indices, p_weights, s_weights = edgelist.make_comp(n_nodes, n_edges, edges, p_deg, s_deg)
 
     # Create the graph
-    G = WDiGraph(n_nodes, len(s_indices), p_indptr, p_indices, s_indptr, s_indices, weights)
+    G = WDiGraph(n_nodes, len(s_indices), p_indptr, p_indices, s_indptr, s_indices, p_weights, s_weights)
     return G
