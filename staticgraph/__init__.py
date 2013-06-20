@@ -7,7 +7,7 @@ from staticgraph import links
 from staticgraph import components
 from staticgraph import graph
 from staticgraph import wgraph
-#from staticgraph import wdigraph
+from staticgraph import wdigraph
 from staticgraph import graph_operations
 from staticgraph import digraph_operations
 from staticgraph import graph_traversal
