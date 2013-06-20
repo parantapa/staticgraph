@@ -45,14 +45,18 @@ class WDiGraph(object):
         nbytes += self.weights.nbytes
         return nbytes
 
-    def successors(self, u):
+    def successors(self, u, weight = False):
         """
         Return iterable for successors of node u.
         """
 
         start = self.s_indptr[u]
         stop  = self.s_indptr[u + 1]
-        return imap(int, self.s_indices[start:stop])
+        for index in xrange(start, stop):
+            if weight == False:
+                yield  self.s_indices[index]
+            else: 
+                yield self.s_indices[index], self.weights[index]
 
     def predecessors(self, u):
         """
@@ -102,14 +106,18 @@ class WDiGraph(object):
 
         return xrange(self.n_nodes)
 
-    def edges(self):
+    def edges(self, weight = False):
         """
         Return iterable for edges of the graph.
         """
 
         for u in self.nodes():
             for v in self.successors(u):
-                yield u, v, self.weight(u, v)
+                if u < v:
+                    if weight == False:
+                        yield u, v
+                    else: 
+                        yield u, v, self.weight(u, v)
 
     def weight(self, u, v):
         """
@@ -178,7 +186,7 @@ def save(store, G):
     # Save basic info
     fname = join(store, "base.pickle")
     with open(fname, "wb") as fobj:
-        pk.dump((G.n_nodes, G.n_edges, G.weights), fobj, -1)
+        pk.dump((G.n_nodes, G.n_edges), fobj, -1)
 
     # define save shortcut
     do_save = lambda fname, arr : np.save(join(store, fname), arr)

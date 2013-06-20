@@ -35,19 +35,21 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
     """
 
     cdef:
-        uint32_t u, v, tmp
+        uint32_t u, v
         uint64_t start, stop
-        float64_t w, temp
+        float64_t w
         size_t i, j, n, del_ctr, e
         ndarray[uint64_t] indptr
-        ndarray[uint32_t] indices
+        ndarray[uint32_t] indices, temp_ind
         ndarray[uint64_t] idxs
-        ndarray[float64_t] weights
-        ndarray[uint32_t] sort_indices
+        ndarray[float64_t] weights, temp_w
+        object sort_indices
 
     indptr = np.empty(n_nodes + 1, "u8")
     indices = np.empty(2 * n_edges, "u4")
     weights = np.empty(2 * n_edges, "f8")
+    temp_ind = np.empty(2 * n_edges, "u4")
+    temp_w = np.empty(2 * n_edges, "f8")
 
     indptr[0] = 0
     for i in xrange(1, n_nodes + 1):
@@ -83,16 +85,11 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
     for i in xrange(n_nodes):
         start = indptr[i]
         stop  = indptr[i + 1]
-        sort_indices = np.array(indices[start:stop].argsort(), dtype = "u4")
-        for j in xrange (start, stop):
-            n = start + sort_indices[j - start]
-            temp = weights[j]
-            weights[j] = weights[n]
-            weights[n] = temp
-            tmp = indices[j]
-            indices[j] = indices[n]
-            indices[n] = tmp
-      
+        sort_indices = indices[start:stop].argsort()
+        indices[start:stop] = indices[start:stop][sort_indices]
+        weights[start:stop] = weights[start:stop][sort_indices]
+
+        
     # Eliminating parallel edges
 
     i, j, del_ctr = 0, 1, 0

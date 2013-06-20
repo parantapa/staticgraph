@@ -40,15 +40,19 @@ class WGraph(object):
         nbytes += self.weights.nbytes
         return nbytes
 
-    def neighbours(self, u):
+    def neighbours(self, u, weight = False):
         """
         Return iterable for neighbours of node u.
         """
 
         start = self.n_indptr[u]
         stop  = self.n_indptr[u + 1]
-        return imap(int, self.n_indices[start:stop])
-
+        for index in xrange(start, stop):
+            if weight == False:
+                yield  self.n_indices[index]
+            else: 
+                yield self.n_indices[index], self.weights[index]
+        
     def degree(self, v):
         """
         Return degree of node v.
@@ -79,7 +83,7 @@ class WGraph(object):
 
         return xrange(self.n_nodes)
 
-    def edges(self):
+    def edges(self, weight = False):
         """
         Return iterable for edges of the graph.
         """
@@ -87,7 +91,10 @@ class WGraph(object):
         for u in self.nodes():
             for v in self.neighbours(u):
                 if u < v:
-                    yield u, v, self.weight(u, v)
+                    if weight == False:
+                        yield u, v
+                    else: 
+                        yield u, v, self.weight(u, v)
 
     def weight(self, u, v):
         """
@@ -152,7 +159,7 @@ def save(store, G):
     # Save basic info
     fname = join(store, "base.pickle")
     with open(fname, "wb") as fobj:
-        pk.dump((G.n_nodes, G.n_edges, G.weights), fobj, -1)
+        pk.dump((G.n_nodes, G.n_edges), fobj, -1)
 
     # define save shortcut
     do_save = lambda fname, arr : np.save(join(store, fname), arr)
