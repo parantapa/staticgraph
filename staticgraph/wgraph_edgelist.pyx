@@ -113,6 +113,6 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] de
         i += 1
         j += 1
 
-    indices = np.resize(indices, (2 * e) - del_ctr)
-    weights = np.resize(weights, (2 * e) - del_ctr)
+    indices = np.resize(indices, indptr[n_nodes])
+    weights = np.resize(weights, indptr[n_nodes])
     return indptr, indices, weights

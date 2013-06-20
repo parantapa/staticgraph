@@ -9,6 +9,10 @@ from random import triangular
 from itertools import chain
 
 def create_iter(edges):
+    """
+    Returns iterator for edges and their weights (u,v,w) of networkx graphs.
+    """
+
     for i in edges:
         yield i[0], i[1], i[2]['weight']
 
