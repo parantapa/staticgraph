@@ -114,3 +114,4 @@ def test_load_save(tmpdir, graph):
     assert a.n_edges == b.n_edges
     assert_equal(a.n_indptr, b.n_indptr)
     assert_equal(a.n_indices, b.n_indices)
+    assert_equal(a.weights, b.weights)

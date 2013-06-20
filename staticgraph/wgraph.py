@@ -167,7 +167,7 @@ def save(store, G):
     # Make the arrays
     do_save("n_indptr.npy", G.n_indptr)
     do_save("n_indices.npy", G.n_indices)
-    do_save("weights.npy", G.n_indices)
+    do_save("weights.npy", G.weights)
 
 def make_deg(n_nodes, edges):
     """

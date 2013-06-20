@@ -120,7 +120,6 @@ class WDiGraph(object):
 
         for u in self.nodes():
             for v in self.successors(u):
-                if u < v:
                     if weight == False:
                         yield u, v
                     else: 

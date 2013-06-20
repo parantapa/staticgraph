@@ -129,8 +129,8 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
         i += 1
         j += 1
 
-    s_indices = np.resize(s_indices, e - del_ctr)
-    s_weights = np.resize(s_weights, e - del_ctr)
+    s_indices = np.resize(s_indices, s_indptr[n_nodes])
+    s_weights = np.resize(s_weights, s_indptr[n_nodes])
     
     i, j, del_ctr = 0, 1, 0
     for n in xrange(n_nodes):
@@ -145,7 +145,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
                 del_ctr += 1
             else:
                 p_indices[i + 1] = p_indices[j]
-                s_weights[i + 1] = s_weights[j]
+                p_weights[i + 1] = p_weights[j]
                 i += 1
                 j += 1
                 
@@ -153,7 +153,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
         i += 1
         j += 1
 
-    p_indices = np.resize(p_indices, e - del_ctr)
-    p_weights = np.resize(p_weights, e - del_ctr)
+    p_indices = np.resize(p_indices, p_indptr[n_nodes])
+    p_weights = np.resize(p_weights, p_indptr[n_nodes])
 
     return p_indptr, p_indices, s_indptr, s_indices, p_weights, s_weights
