@@ -1,5 +1,5 @@
 """
-Module implementing the Dijkstra shortest path algorithm for undirected graphs
+Module implementing the Dijkstra shortest path algorithm for weighted graphs
 """
 
 from numpy import arange, uint32, zeros, empty, float64, uint8
@@ -55,7 +55,7 @@ def extract_min_dist(p_queue, weights, heap_size):
     min_heapify(p_queue, weights, 0, heap_size)
     return minimum
 
-def dijkstra_all(G, s):
+def dijkstra_all(G, s, directed = False):
     """
     Returns a sequence of vertices alongwith the length of their 
     shortest paths from source node s for an undirected 
@@ -82,9 +82,10 @@ def dijkstra_all(G, s):
     Notes
     ------
 
-    It is mandatory that G be undirected.
-    weights = (2 ** 64) - 1implies that the node is unreachable from the source.
+    weights[i] = (2 ** 64) : implies that the node i is unreachable from the source.
+    directed must be set to True for directed graphs.
     """
+    
     if s >= G.order():
         raise StaticGraphNodeAbsentException("source node absent in graph!!")
 
@@ -96,16 +97,29 @@ def dijkstra_all(G, s):
     weights[s] = 0
     build_min_heap(nodes, weights)
     heap_size = order
+    
     while isEmpty(nodes) == False:
         u = extract_min_dist(nodes, weights, heap_size)
         visited[u] = 1
         heap_size -= 1
-        for v in G.neighbours(u):
-            if visited[v] == 0:
-                if weights[v] > (weights[u] + G.weight(u, v)):
-                    weights[v] = (weights[u] + G.weight(u, v))
+
+        #if graph is undirected
+        if directed == False:    
+            for v in G.neighbours(u):
+                    if visited[v] == 0:
+                        if weights[v] > (weights[u] + G.weight(u, v)):
+                            weights[v] = (weights[u] + G.weight(u, v))
+    
+        #if graph is directed
+        else:
+             for v in G.successors(u):
+                    if visited[v] == 0:
+                        if weights[v] > (weights[u] + G.weight(u, v)):
+                            weights[v] = (weights[u] + G.weight(u, v))
+
     nodes = arange(order, dtype = uint32)
     sort_indices = weights.argsort()
     weights = weights[sort_indices]
     nodes = nodes[sort_indices]
     return nodes, weights
+
