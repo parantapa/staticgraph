@@ -2,7 +2,7 @@
 Module implementing the standard traversal techniques for an undirected graph
 """
 
-from numpy import uint32, zeros, empty
+from numpy import uint32, zeros, empty, int64
 from itertools import imap
 from staticgraph.exceptions import StaticGraphNodeAbsentException
 
@@ -40,7 +40,7 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     
     queue = empty(order, dtype = uint32)
     bfs_indices = empty((order), dtype = uint32)
-    bfs_indptr = empty((maxdepth + 1), dtype = uint32)
+    bfs_indptr = empty((maxdepth + 1), dtype = int64)
     bfs_indptr[:] = (2 ** 32) - 1
     front = rear = 0
     queue[rear] = s
