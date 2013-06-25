@@ -2,62 +2,72 @@
 Module implementing the standard traversal techniques for an undirected graph
 """
 
-from numpy import int32, zeros
+from numpy import uint32, zeros, empty
 from itertools import imap
 from staticgraph.exceptions import StaticGraphNodeAbsentException
 
-def traverse_bfs(G, s):
+def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     """
-    Returns a sequence of vertices alongwith their predecessors for 
+    Returns a sequence of vertices for 
     staticgraph G in a breadth-first-search order starting at source s.
     
     Parameters
     ----------
-    G : An undirected staticgraph.
-    s : Source node to start the bfs traversal.
+    G        : An undirected staticgraph.
+    s        : Source node to start the bfs traversal.
+    maxdepth : Optional parameter denoting the maximum depth for traversal.
     
     Returns
     -------
-    res : A 2-Dimensional numpy int32 array.
-          1st row: A sequence of vertices in BFS traversal starting from s.
-          2nd row: The immediate predecessors of the vertices traversed.
-
+    bfs_indices : A numpy uint32 array returning a sequence of vertices in 
+                  BFS traversal starting from s.
+             
+    bfs_indptr  :  A numpy uint32 array returning the starting index pointers of a 
+                   particular depth in bfs_indices.
+    
     Notes
     ------
 
     It is mandatory that G be undirected.
-    Predecessor is -1 for the source node.
     """
     
     if s >= G.order():
         raise StaticGraphNodeAbsentException("source node absent in graph!!")
     
     order = G.order()
-    pred = zeros(order , dtype = int32)
-    pred -= 1
+    dist = empty(order , dtype = uint32)
+    dist[:] = (2 ** 32) - 1
     
-    queue = zeros(order, dtype = int32)
-    res = zeros((2, order), dtype = int32)
-    
+    queue = empty(order, dtype = uint32)
+    bfs_indices = empty((order), dtype = uint32)
+    bfs_indptr = empty((maxdepth + 1), dtype = uint32)
+    bfs_indptr[:] = (2 ** 32) - 1
     front = rear = 0
     queue[rear] = s
+    dist[s] = 0
+    bfs_indptr[0] = 0
     rear = 1
     index = 0
+    depth = 0
     
     while (front != rear):
         u = queue[front]
-        res[0, index] = u
-        res[1, index] = pred[u]
-        index = index + 1
-        front = front + 1
+        bfs_indices[index] = u
+        if bfs_indptr[dist[u]] == (2 ** 32) - 1:
+             bfs_indptr[dist[u]] = index
+             depth += 1
+        index += 1
+        front += 1
         start = G.n_indptr[u]
         stop  = G.n_indptr[u + 1]
         for v in imap(int, G.n_indices[start:stop]):
-            if pred[v] == -1 and v != s:
-                pred[v] = u
+            if dist[v] == (2 ** 32) - 1:
+                dist[v] = dist[u] + 1
                 queue[rear] = v
                 rear = rear + 1
-    return res[:, :index]
+
+    bfs_indptr[depth + 1] = index
+    return bfs_indptr[:depth + 2], bfs_indices[:index]
 
 def traverse_dfs(G, s):
     """
