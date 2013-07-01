@@ -4,7 +4,6 @@ Tests for implementation of Dijkstra's algorithm for graphs
 
 import networkx as nx
 import staticgraph as sg
-import pytest
 from random import randint, uniform
 
 def pytest_generate_tests(metafunc):
@@ -18,7 +17,7 @@ def pytest_generate_tests(metafunc):
     # 100 vertex random graph
         a = nx.gnp_random_graph(100, 0.1)
         for u, v in a.edges_iter():    
-            a.add_weighted_edges_from([(u, v, uniform(0,100))])
+            a.add_weighted_edges_from([(u, v, uniform(0, 100))])
         edge_list = []
         for u, v, w in a.edges_iter(data = True):
             edge_list.append((u, v, w['weight']))

@@ -70,6 +70,52 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     bfs_indptr[depth] = index
     return bfs_indptr[:depth + 1], bfs_indices[:index]
 
+def bfs_search(G, s, t):
+    """
+    Returns the path from source to target in BFS
+    """
+
+    if s >= G.order():
+        raise StaticGraphNodeAbsentException("source node absent in graph!!")
+    if t >= G.order():
+        raise StaticGraphNodeAbsentException("target node absent in graph!!")
+    
+    order = G.order()
+    path = empty(order , dtype = uint32)
+    path[:] = (2 ** 32) - 1
+    pred = empty(order , dtype = uint32)
+    pred[:] = (2 ** 32) - 1
+    queue = empty(order, dtype = uint32)
+    front = rear = 0
+    queue[rear] = s
+    rear = 1
+
+    while front != rear and pred[t] == (2 ** 32) - 1:
+        u = queue[front]
+        front += 1
+        start = G.n_indptr[u]
+        stop  = G.n_indptr[u + 1]
+        for v in imap(int, G.n_indices[start:stop]):
+            if pred[v] == (2 ** 32) - 1:
+                pred[v] = u
+                queue[rear] = v
+                rear = rear + 1
+            if v == t:
+                break
+    
+    if pred[t] == (2 ** 32) - 1:
+        return None
+    
+    u = t
+    index = 0
+    while u != s:
+        path[index] = u
+        index += 1
+        u = pred[u]
+    path[index] = s
+    
+    return path[index::-1]
+
 def traverse_dfs(G, s):
     """
     Returns a sequence of vertices alongwith their predecessors for 
