@@ -24,7 +24,7 @@ def eccentricity(G, v=None):
     """
 
     if v != None and v >= G.order():
-        raise StaticGraphNodeAbsentException("given node absent in graph!!")
+        raise sg.exceptions.StaticGraphNodeAbsentException("given node absent in graph!!")
     
     order = G.order()
     n_nodes = randint(0, order)
@@ -55,8 +55,6 @@ def eccentricity(G, v=None):
     deg = sg.graph.make_deg(n_nodes, iter(edgelist))
     b = sg.graph.make(n_nodes, index, iter(edgelist), deg)
     
-    print b.order(), list(b.edges())
-
     if v!= None:
         sp = sg.graph_traversal.bfs_all(b, 0)
         return sp[0].size - 2
