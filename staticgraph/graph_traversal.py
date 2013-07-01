@@ -6,7 +6,7 @@ from numpy import uint32, zeros, empty, int64
 from itertools import imap
 from staticgraph.exceptions import StaticGraphNodeAbsentException
 
-def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
+def bfs_all(G, s, maxdepth = (2 ** 32) - 1):
     """
     Returns a sequence of vertices for 
     staticgraph G in a breadth-first-search order starting at source s.
@@ -39,8 +39,8 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     dist[:] = (2 ** 32) - 1
     
     queue = empty(order, dtype = uint32)
-    bfs_indices = empty((order), dtype = uint32)
-    bfs_indptr = empty((maxdepth + 2), dtype = int64)
+    bfs_indices = empty(order, dtype = uint32)
+    bfs_indptr = empty(order, dtype = int64)
     bfs_indptr[:] = (2 ** 32) - 1
     front = rear = 0
     queue[rear] = s
@@ -50,12 +50,14 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     index = 0
     depth = 0
     
-    while (front != rear and depth <= maxdepth):
+    while (front != rear):
         u = queue[front]
-        bfs_indices[index] = u
         if bfs_indptr[dist[u]] == (2 ** 32) - 1:
              bfs_indptr[dist[u]] = index
              depth += 1
+             if depth > maxdepth:
+                 break
+        bfs_indices[index] = u
         index += 1
         front += 1
         start = G.n_indptr[u]
