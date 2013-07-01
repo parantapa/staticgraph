@@ -2,7 +2,7 @@
 Module implementing the standard traversal techniques for a directed graph
 """
 
-from numpy import uint32, zeros, empty, int64
+from numpy import uint32, zeros, empty, int32
 from itertools import imap
 from staticgraph.exceptions import StaticGraphNodeAbsentException
 
@@ -40,7 +40,7 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     
     queue = empty(order, dtype = uint32)
     bfs_indices = empty((order), dtype = uint32)
-    bfs_indptr = empty((maxdepth + 1), dtype = int64)
+    bfs_indptr = empty((maxdepth + 2), dtype = uint32)
     bfs_indptr[:] = (2 ** 32) - 1
     front = rear = 0
     queue[rear] = s
@@ -50,7 +50,7 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     index = 0
     depth = 0
     
-    while (front != rear):
+    while (front != rear and depth <= maxdepth):
         u = queue[front]
         bfs_indices[index] = u
         if bfs_indptr[dist[u]] == (2 ** 32) - 1:
@@ -65,11 +65,13 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
                 dist[v] = dist[u] + 1
                 queue[rear] = v
                 rear = rear + 1
+    
+    if depth <= maxdepth:
+        depth += 1
+    bfs_indptr[depth] = index
+    return bfs_indptr[:depth + 1], bfs_indices[:index]
 
-    bfs_indptr[depth + 1] = index
-    return bfs_indptr[:depth + 2], bfs_indices[:index]
-
-def traverse_dfs(G, s):
+def dfs_all(G, s, maxdepth = (2 ** 16) -1):
     """
     Returns a sequence of vertices alongwith their predecessors for 
     staticgraph G in a depth-first-search order starting at source s.
