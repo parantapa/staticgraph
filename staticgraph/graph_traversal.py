@@ -70,7 +70,7 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     bfs_indptr[depth] = index
     return bfs_indptr[:depth + 1], bfs_indices[:index]
 
-def bfs_search(G, s, t):
+def bfs_search(G, s, t, maxdepth = (2 ** 32) - 1):
     """
     Returns the path from source to target in BFS
     
@@ -107,8 +107,9 @@ def bfs_search(G, s, t):
     front = rear = 0
     queue[rear] = s
     rear = 1
+    depth = path[s] = 0
 
-    while front != rear and pred[t] == (2 ** 32) - 1:
+    while front != rear and pred[t] == (2 ** 32) - 1 and depth < maxdepth:
         u = queue[front]
         front += 1
         start = G.n_indptr[u]
@@ -116,6 +117,9 @@ def bfs_search(G, s, t):
         for v in imap(int, G.n_indices[start:stop]):
             if pred[v] == (2 ** 32) - 1:
                 pred[v] = u
+                path[v] = path[u] + 1
+                if depth < path[v]:
+                    depth += 1
                 queue[rear] = v
                 rear = rear + 1
             if v == t:
