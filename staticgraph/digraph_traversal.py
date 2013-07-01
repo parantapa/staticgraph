@@ -140,56 +140,75 @@ def bfs_search(G, s, t, maxdepth = (2 ** 32) - 1):
     
     return path[index::-1]
 
-def dfs_all(G, s, maxdepth = (2 ** 16) -1):
+def dfs_search(G, s, t, maxdepth = (2 ** 32) - 1):
     """
-    Returns a sequence of vertices alongwith their predecessors for 
-    staticgraph G in a depth-first-search order starting at source s.
-
+    Returns the path from source to target in DFS
+    
     Parameters
     ----------
-    G : A directed staticgraph.
-    s : Source node to start the dfs traversal.
+    G        : Adirected staticgraph.
+    s        : Source node to start the DFS.
+    t        : Target node to start the DFS.
+    maxdepth : Optional parameter denoting the maximum depth for DFS.
     
     Returns
     -------
-    res :A 2-Dimensional numpy int32 array.
-          1st row: A sequence of vertices in BFS traversal starting from s.
-          2nd row: The immediate predecessors of the vertices traversed.
-
+    path : A numpy uint32 array returning a sequence of vertices in 
+           DFS from s to t.
+              
     Notes
     ------
 
     It is mandatory that G be directed.
-    Predecessor is -1 for the source node.
+    Returns None on failure to find target node.
     """
 
     if s >= G.order():
         raise StaticGraphNodeAbsentException("source node absent in graph!!")
+    if t >= G.order():
+        raise StaticGraphNodeAbsentException("target node absent in graph!!")
     
     order = G.order()
-    pred = zeros(order, dtype = int32)
-    pred -= 1
-    
-    res = zeros((2, order), dtype = int32)
-    stack = zeros(order, dtype = int32)
-
-    index = 1
+    path = empty(order , dtype = uint32)
+    path[:] = (2 ** 32) - 1
+    pred = empty(order , dtype = uint32)
+    pred[:] = (2 ** 32) - 1
+    stack = empty(order, dtype = uint32)
     top = 0
-    res[0, 0] = stack[top] = s
-    res[1, 0] = -1
-    
+    stack[top] = s
+    path[s] = 0
+    flag = 0
+
     while top >= 0:
+        if flag == 1:
+            break
         u = stack[top]
         start = G.s_indptr[u]
         stop  = G.s_indptr[u + 1]
         for v in imap(int, G.s_indices[start:stop]):
-            if pred[v] == -1 and v != s:
+            if pred[v] == (2 ** 32) - 1:
                 pred[v] = u
+                path[v] = path[u] + 1
+                if path[v] >= maxdepth:
+                    break
+                if v == t:
+                    flag = 1
+                    break
                 top = top + 1
-                res[0, index] = stack[top] = v
-                res[1, index] = u
-                index = index + 1
+                stack[top] = v
                 break
         else:
-            top = top - 1  
-    return res[:, :index]
+            top -= 1
+
+    if pred[t] == (2 ** 32) - 1:
+        return None
+        
+    u = t
+    index = 0
+    while u != s:
+        path[index] = u
+        index += 1
+        u = pred[u]
+    path[index] = s
+    
+    return path[index::-1]
