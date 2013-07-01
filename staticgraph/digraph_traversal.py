@@ -6,7 +6,7 @@ from numpy import uint32, zeros, empty
 from itertools import imap
 from staticgraph.exceptions import StaticGraphNodeAbsentException
 
-def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
+def bfs_all(G, s, maxdepth = (2 ** 32) - 1):
     """
     Returns a sequence of vertices for 
     staticgraph G in a breadth-first-search order starting at source s.
