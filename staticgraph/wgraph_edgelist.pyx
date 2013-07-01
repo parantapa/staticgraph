@@ -16,7 +16,6 @@ def make_deg(size_t n_nodes, object edges):
     cdef:
         uint32_t u, v
         ndarray[uint32_t] deg
-        float64_t w
 
     deg = np.zeros(n_nodes, "u4")
 
