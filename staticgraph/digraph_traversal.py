@@ -71,6 +71,70 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
     bfs_indptr[depth] = index
     return bfs_indptr[:depth + 1], bfs_indices[:index]
 
+def bfs_search(G, s, t):
+    """
+    Returns the path from source to target in BFS
+    
+    Parameters
+    ----------
+    G        : A directed staticgraph.
+    s        : Source node to start the BFS.
+    t        : Target node to start the BFS.
+    maxdepth : Optional parameter denoting the maximum depth for BFS.
+    
+    Returns
+    -------
+    path : A numpy uint32 array returning a sequence of vertices in 
+           BFS from s to t.
+              
+    Notes
+    ------
+
+    It is mandatory that G be directed.
+    Returns None on failure to find target node.
+    """
+
+    if s >= G.order():
+        raise StaticGraphNodeAbsentException("source node absent in graph!!")
+    if t >= G.order():
+        raise StaticGraphNodeAbsentException("target node absent in graph!!")
+    
+    order = G.order()
+    path = empty(order , dtype = uint32)
+    path[:] = (2 ** 32) - 1
+    pred = empty(order , dtype = uint32)
+    pred[:] = (2 ** 32) - 1
+    queue = empty(order, dtype = uint32)
+    front = rear = 0
+    queue[rear] = s
+    rear = 1
+
+    while front != rear and pred[t] == (2 ** 32) - 1:
+        u = queue[front]
+        front += 1
+        start = G.s_indptr[u]
+        stop  = G.s_indptr[u + 1]
+        for v in imap(int, G.s_indices[start:stop]):
+            if pred[v] == (2 ** 32) - 1:
+                pred[v] = u
+                queue[rear] = v
+                rear = rear + 1
+            if v == t:
+                break
+    
+    if pred[t] == (2 ** 32) - 1:
+        return None
+    
+    u = t
+    index = 0
+    while u != s:
+        path[index] = u
+        index += 1
+        u = pred[u]
+    path[index] = s
+    
+    return path[index::-1]
+
 def dfs_all(G, s, maxdepth = (2 ** 16) -1):
     """
     Returns a sequence of vertices alongwith their predecessors for 

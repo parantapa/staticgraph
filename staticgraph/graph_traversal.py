@@ -73,6 +73,24 @@ def bfs_all(G, s, maxdepth = (2 ** 16) - 1):
 def bfs_search(G, s, t):
     """
     Returns the path from source to target in BFS
+    
+    Parameters
+    ----------
+    G        : An undirected staticgraph.
+    s        : Source node to start the BFS.
+    t        : Target node to start the BFS.
+    maxdepth : Optional parameter denoting the maximum depth for BFS.
+    
+    Returns
+    -------
+    path : A numpy uint32 array returning a sequence of vertices in 
+           BFS from s to t.
+              
+    Notes
+    ------
+
+    It is mandatory that G be undirected.
+    Returns None on failure to find target node.
     """
 
     if s >= G.order():
