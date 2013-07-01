@@ -15,5 +15,6 @@ from staticgraph import graph_traversal
 from staticgraph import digraph_traversal
 from staticgraph import graph_shortest_paths
 from staticgraph import dijkstra
+from staticgraph import distance_measures
 from staticgraph import exceptions
 
