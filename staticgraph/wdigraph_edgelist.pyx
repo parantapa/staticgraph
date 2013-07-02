@@ -40,7 +40,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
 
     cdef:
         uint32_t u, v, tmp
-        uint64_t start, stop, e
+        uint64_t start, stop, e, p_ptr, s_ptr
         float64_t w, temp
         size_t i, j, n, del_ctr
         ndarray[uint64_t] p_indptr
@@ -109,8 +109,9 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
     # Eliminating parallel edges
 
     i, j, del_ctr = 0, 1, 0
+    s_ptr = 0
     for n in xrange(n_nodes):
-        if(s_indptr[n] == s_indptr[n + 1]):
+        if(s_ptr == s_indptr[n + 1]):
             continue
         s_indices[i] = s_indices[i + del_ctr]
         s_weights[i] = s_weights[i + del_ctr]
@@ -124,7 +125,8 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
                 s_weights[i + 1] = s_weights[j]
                 i += 1
                 j += 1
-                
+        
+        s_ptr = s_indptr[n + 1]        
         s_indptr[n + 1] = i + 1
         i += 1
         j += 1
@@ -133,8 +135,9 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
     s_weights = np.resize(s_weights, s_indptr[n_nodes])
     
     i, j, del_ctr = 0, 1, 0
+    p_ptr = 0
     for n in xrange(n_nodes):
-        if(p_indptr[n] == p_indptr[n + 1]):
+        if(p_ptr == p_indptr[n + 1]):
             continue
         p_indices[i] = p_indices[i + del_ctr]
         p_weights[i] = p_weights[i + del_ctr]
@@ -148,7 +151,8 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
                 p_weights[i + 1] = p_weights[j]
                 i += 1
                 j += 1
-                
+
+        p_ptr = p_indptr[n + 1]
         p_indptr[n + 1] = i + 1
         i += 1
         j += 1
