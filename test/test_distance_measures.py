@@ -5,6 +5,7 @@ Tests for different distance measures for graphs.
 import networkx as nx
 import staticgraph as sg
 from numpy import array, uint32
+from numpy.testing import assert_equal
 
 def pytest_generate_tests(metafunc):
     """
@@ -64,7 +65,7 @@ def test_periphery(testgraph):
     nx_per = array(nx_per, dtype = uint32)
     nx_per.sort()
     sg_per.sort()
-    assert (nx_per == sg_per).all()
+    assert_equal(nx_per, sg_per)
 
 def test_center(testgraph):
     """
@@ -77,5 +78,5 @@ def test_center(testgraph):
     nx_center = array(nx_center, dtype = uint32)
     nx_center.sort()
     sg_center.sort()
-    assert (nx_center == sg_center).all()
+    assert_equal(nx_center, sg_center)
 
