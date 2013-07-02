@@ -31,14 +31,13 @@ def min_heapify(heap, weights, i, heap_size):
         heap[i], heap[smallest] = heap[smallest], heap[i]
         min_heapify(heap, weights, smallest, heap_size)
 
-def build_min_heap(p_queue, weights):
+def build_min_heap(p_queue, heap_size, weights):
     """
     Module to create a heap from an unsorted array p_queue
     according to the corresponding values of weights.
     """
 
-    heap_size = p_queue.size
-    for i in range(p_queue.size // 2, -1, -1):
+    for i in range(heap_size // 2, -1, -1):
         min_heapify(p_queue, weights, i, heap_size)
 
 def extract_min_dist(p_queue, weights, heap_size):
@@ -95,27 +94,29 @@ def dijkstra_all(G, s, directed = False):
     visited = zeros(order, dtype = uint8)
     weights[:] = (2 ** 64) -1
     weights[s] = 0
-    build_min_heap(nodes, weights)
     heap_size = order
-    
+    build_min_heap(nodes, heap_size, weights)
+
     while isEmpty(nodes) == False:
         u = extract_min_dist(nodes, weights, heap_size)
         visited[u] = 1
+        'visited= ',visited
         heap_size -= 1
 
         #if graph is undirected
         if directed == False:    
             for v in G.neighbours(u):
-                    if visited[v] == 0:
-                        if weights[v] > (weights[u] + G.weight(u, v)):
-                            weights[v] = (weights[u] + G.weight(u, v))
-    
+                if visited[v] == 0:
+                    if weights[v] > (weights[u] + G.weight(u, v)):
+                        weights[v] = (weights[u] + G.weight(u, v))
+                    
         #if graph is directed
         else:
              for v in G.successors(u):
-                    if visited[v] == 0:
-                        if weights[v] > (weights[u] + G.weight(u, v)):
-                            weights[v] = (weights[u] + G.weight(u, v))
+                 if visited[v] == 0:
+                     if weights[v] > (weights[u] + G.weight(u, v)):
+                         weights[v] = (weights[u] + G.weight(u, v))
+        build_min_heap(nodes, heap_size, weights)
 
     nodes = arange(order, dtype = uint32)
     sort_indices = weights.argsort()
