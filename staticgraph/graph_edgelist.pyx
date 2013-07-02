@@ -16,6 +16,7 @@ def make_deg(size_t n_nodes, object edges):
 
     cdef:
         uint32_t u, v
+        uint64_t ptr
         ndarray[uint32_t] deg
 
     deg = np.zeros(n_nodes, "u4")
@@ -42,9 +43,12 @@ cdef void remove_dups(size_t n_nodes, ndarray[uint64_t] indptr,
 
     # Delete any duplicate edges
     i, j, ndups = 0, 1, 0
+    ptr = indptr[0]
+    
     for u in range(n_nodes):
         # Ignore nodes with no neighbors
-        if indptr[u] == indptr[u + 1]:
+        if ptr == indptr[u + 1]:
+            indptr[u + 1] = indptr[u]
             continue
 
         # Copy the first element in place
@@ -64,6 +68,7 @@ cdef void remove_dups(size_t n_nodes, ndarray[uint64_t] indptr,
 
         # Since some edges are now gone move the end of the current
         # neighbor set in place
+        ptr = indptr[u + 1]
         indptr[u + 1] = i + 1
         i += 1
         j += 1
@@ -130,10 +135,10 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges,
         stop  = indptr[i + 1]
         if stop - start > 1:
             indices[start:stop].sort()
-
+    
     # Remove the duplicate edges
     remove_dups(n_nodes, indptr, indices)
-
+    
     # Resize the indices array in place
     indices.resize(indptr[n_nodes], refcheck=False)
 

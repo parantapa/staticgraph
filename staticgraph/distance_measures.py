@@ -1,5 +1,5 @@
 import staticgraph as sg
-from numpy import zeros, empty, uint32, uint64
+from numpy import zeros, empty, uint32, amax, amin
 from random import randint
 
 def eccentricity(G, v=None):
@@ -52,8 +52,12 @@ def eccentricity(G, v=None):
                 index += 1
 
     edgelist = edgelist[:index]
+    print 'nodes=', nodes
+    print 'edgelist=', edgelist
     deg = sg.graph.make_deg(n_nodes, iter(edgelist))
     b = sg.graph.make(n_nodes, index, iter(edgelist), deg)
+
+    print b.order(), list(b.edges())
     
     if v!= None:
         sp = sg.graph_traversal.bfs_all(b, 0)
@@ -68,3 +72,32 @@ def eccentricity(G, v=None):
         index += 1
 
     return ecc
+
+def diameter(G, e=None):
+    """
+    Return the diameter of the graph G.
+
+    The diameter is the maximum eccentricity.
+
+    Parameters
+    ----------
+    G : A static graph
+
+    e : eccentricity numpy 2D array, optional
+      A precomputed numpy 2D array of eccentricities.
+
+    Returns
+    -------
+    d : integer
+       Diameter of graph
+
+    See Also
+    --------
+    eccentricity
+    """
+    if e is None:
+        e = eccentricity(G)
+    e = e[1]
+    if e.size == 0:
+        return None
+    return amax(e)
