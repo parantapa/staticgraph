@@ -1,5 +1,5 @@
 import staticgraph as sg
-from numpy import zeros, empty, uint32, amax, amin, array
+from numpy import zeros, empty, uint32, amax, amin, array, argsort
 from random import randint, sample
 
 def eccentricity(G, n_nodes, v=None):
@@ -131,3 +131,73 @@ def radius(G, n_nodes, e = None):
     if e.size == 0:
         return None
     return amin(e)
+
+def periphery(G, n_nodes, e=None):
+    """
+    Return the periphery of a subgraph of G. 
+
+    The periphery is the set of nodes with eccentricity equal to the diameter. 
+
+    Parameters
+    ----------
+    G : An undirected staticgraph
+
+    n_nodes : Total no.of nodes of subgraph.
+
+    e : eccentricity numpy 2D array, optional
+      A precomputed numpy 2D array of eccentricities.
+
+    Returns
+    -------
+    p : numpy array of nodes in periphery
+    """
+    
+    if e is None:
+        e=eccentricity(G, n_nodes)
+
+    sort_indices = e[1].argsort()
+    e[0] = e[0][sort_indices]
+    e[1] = e[1][sort_indices]
+
+    i = e[0].size - 1
+    while i >= 0:
+        if e[1, i] < e[1, -1]:
+            break
+        i -= 1
+
+    return e[0][i + 1:]
+
+def center(G, n_nodes, e=None):
+    """
+    Return the center of a subgraph of G. 
+
+    The center is the set of nodes with eccentricity equal to the radius. 
+
+    Parameters
+    ----------
+    G : An undirected staticgraph
+
+    n_nodes : Total no.of nodes of subgraph.
+
+    e : eccentricity numpy 2D array, optional
+      A precomputed numpy 2D array of eccentricities.
+
+    Returns
+    -------
+    p : numpy array of nodes in center
+    """
+    
+    if e is None:
+        e=eccentricity(G, n_nodes)
+
+    sort_indices = e[1].argsort()
+    e[0] = e[0][sort_indices]
+    e[1] = e[1][sort_indices]
+
+    i = 0
+    while i < e[0].size:
+        if e[1, i] > e[1, 0]:
+            break
+        i += 1
+
+    return e[0][:i]
