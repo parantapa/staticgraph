@@ -43,34 +43,21 @@ def eccentricity(G, n_nodes, v=None):
         if v not in nodes:
             nodes[0] = v
 
-    index = 0
-
-    for i in xrange(n_nodes):
-        for j in xrange(n_nodes):
-            if G.has_edge(nodes[i], nodes[j]):
-                edgelist[index] = (i, j)
-                index += 1
-
-    edgelist = edgelist[:index]
-    deg = sg.digraph.make_deg(n_nodes, iter(edgelist))
-    b = sg.digraph.make(n_nodes, index, iter(edgelist), deg)
-
     if v != None:
-        sp = sg.digraph_traversal.bfs_all(b, 0)
+        sp = sg.digraph_traversal.bfs_all(G, v)
         if G.out_degree(v) == 0:
             return (2 ** 32) - 1
         return sp[0].size - 2
 
     ecc = empty((2, n_nodes), dtype = uint32)
     index = 0
-    for u in xrange(n_nodes):
-        sp = sg.digraph_traversal.bfs_all(b, u)
-        ecc[0, index] = nodes[u]
-        if G.out_degree(u) == 0:
-            ecc[1, index] = (2 ** 32) - 1
+    for i in xrange(n_nodes):
+        sp = sg.digraph_traversal.bfs_all(G, nodes[i])
+        ecc[0, i] = nodes[i]
+        if G.out_degree(nodes[i]) == 0:
+            ecc[1, i] = (2 ** 32) - 1
         else:
-            ecc[1, index] = sp[0].size - 2
-        index += 1
+            ecc[1, i] = sp[0].size - 2
 
     return ecc
 
