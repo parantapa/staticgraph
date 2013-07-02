@@ -1,6 +1,10 @@
+"""
+Functions for the standard distance measures for undirected graphs.
+"""
+
 import staticgraph as sg
-from numpy import zeros, empty, uint32, amax, amin, array, argsort
-from random import randint, sample
+from numpy import empty, uint32, amax, amin, array
+from random import sample
 
 def eccentricity(G, n_nodes, v=None):
     """
@@ -32,12 +36,12 @@ def eccentricity(G, n_nodes, v=None):
     edgelist = empty((n_nodes ** 2, 2), dtype = uint32) 
     index = 0
 
-    if v != None:
-        nodes[0] = v
-        index = 1
-
-    nodes = sample(xrange(order), n_nodes)
+    nodes = sample(xrange(order), n_nodes)    
     nodes = array(nodes, dtype = uint32)
+    
+    if v != None:
+        if v not in nodes:
+            nodes[0] = v
 
     index = 0
 
@@ -51,7 +55,7 @@ def eccentricity(G, n_nodes, v=None):
     deg = sg.graph.make_deg(n_nodes, iter(edgelist))
     b = sg.graph.make(n_nodes, index, iter(edgelist), deg)
 
-    if v!= None:
+    if v != None:
         sp = sg.graph_traversal.bfs_all(b, 0)
         if G.degree(v) == 0:
             return (2 ** 32) - 1
@@ -95,7 +99,7 @@ def diameter(G,  n_nodes, e = None):
     """
     
     if e is None:
-        e = eccentricity(G,n_nodes)
+        e = eccentricity(G , n_nodes)
     e = e[1]
     if e.size == 0:
         return None
@@ -132,7 +136,7 @@ def radius(G, n_nodes, e = None):
         return None
     return amin(e)
 
-def periphery(G, n_nodes, e=None):
+def periphery(G, n_nodes, e = None):
     """
     Return the periphery of a subgraph of G. 
 
@@ -153,7 +157,7 @@ def periphery(G, n_nodes, e=None):
     """
     
     if e is None:
-        e=eccentricity(G, n_nodes)
+        e = eccentricity(G, n_nodes)
 
     sort_indices = e[1].argsort()
     e[0] = e[0][sort_indices]
@@ -167,7 +171,7 @@ def periphery(G, n_nodes, e=None):
 
     return e[0][i + 1:]
 
-def center(G, n_nodes, e=None):
+def center(G, n_nodes, e = None):
     """
     Return the center of a subgraph of G. 
 
@@ -188,7 +192,7 @@ def center(G, n_nodes, e=None):
     """
     
     if e is None:
-        e=eccentricity(G, n_nodes)
+        e = eccentricity(G, n_nodes)
 
     sort_indices = e[1].argsort()
     e[0] = e[0][sort_indices]
