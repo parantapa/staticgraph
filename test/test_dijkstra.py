@@ -42,7 +42,7 @@ def pytest_generate_tests(metafunc):
 
         metafunc.parametrize("testgraph", testgraphs)
 
-def test_dijkstra_graph(testgraph):
+def test_dijkstra_all_graph(testgraph):
     """
     Testing dijkstra_all function for undirected graphs.
     """
@@ -55,7 +55,7 @@ def test_dijkstra_graph(testgraph):
     for i in range(len(nx_dijk)):
         assert sg_dijk[1][i] == nx_dijk[sg_dijk[0][i]]
 
-def test_dijkstra_digraph(testgraph):
+def test_dijkstra_all_digraph(testgraph):
     """
     Testing dijkstra_all function for directed graphs.
     """
@@ -67,3 +67,28 @@ def test_dijkstra_digraph(testgraph):
     sg_dijk = sg.dijkstra.dijkstra_all(b, s, directed = True)
     for i in range(len(nx_dijk)):
         assert sg_dijk[1][i] == nx_dijk[sg_dijk[0][i]]
+
+def test_dijkstra_search_graph(testgraph):
+    """
+    Testing dijkstra_search function for undirected graphs.
+    """
+
+    a, b = testgraph[0:2]
+    s = randint(0, 100)
+    t = randint(0, 100)
+    nx_dijk =  nx.dijkstra_path_length(a, s, t)
+    sg_dijk = sg.dijkstra.dijkstra_search(b, s, t)
+    assert nx_dijk == sg_dijk[1]
+
+def test_dijkstra_search_digraph(testgraph):
+    """
+    Testing dijkstra_search function for undirected graphs.
+    """
+
+    a, b = testgraph[2:]
+    s = randint(0, 100)
+    t = randint(0, 100)
+    nx_dijk =  nx.dijkstra_path_length(a, s, t)
+    sg_dijk = sg.dijkstra.dijkstra_search(b, s, t, directed = True)
+    assert nx_dijk == sg_dijk[1]
+
