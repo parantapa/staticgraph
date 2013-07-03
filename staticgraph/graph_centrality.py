@@ -3,7 +3,7 @@ module to implement different centrality measures for undirected graphs.
 """
 
 import staticgraph as sg
-from numpy import empty
+from numpy import empty, float64
 
 def degree_centrality(G):
     """
@@ -30,8 +30,8 @@ def degree_centrality(G):
     possible degree in a simple graph n-1 where n is the number of nodes in G.
     """
 
-    degree_centrality = empty(G.order(), dtype = ufloat64)
+    degree_centrality = empty(G.order(), dtype = float64)
     d = G.order() - 1
     for u in G.nodes():
-        degree_centrality[u] = G.degree(u) / d
+        degree_centrality[u] = float(G.degree(u)) / d
     return degree_centrality
