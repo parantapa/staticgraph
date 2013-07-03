@@ -17,3 +17,9 @@ class StaticGraphNodeAbsentException(StaticGraphException):
     Subclass of StaticGraphException class for
     absence of a specific node.
     """
+
+class StaticGraphDisconnectedGraphException(StaticGraphException):
+    """
+    Subclass of StaticGraphException class for
+    handling unexpected disconnected graphs.
+    """

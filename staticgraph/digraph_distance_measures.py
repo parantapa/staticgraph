@@ -5,6 +5,8 @@ Functions for the standard distance measures for directed graphs.
 import staticgraph as sg
 from numpy import empty, uint32, amax, amin, array
 from random import sample
+from staticgraph.exceptions import StaticGraphNodeAbsentException
+from staticgraph.exceptions import StaticGraphDisconnectedGraphException
 
 def eccentricity(G, n_nodes, v=None):
     """
@@ -27,6 +29,10 @@ def eccentricity(G, n_nodes, v=None):
     ecc : A 2D numpy array.
           Row 1: Node labels
           Row 2: Eccentricity of corresponding nodes.
+
+    Notes
+    -----
+    Exception is raised if given graph has disconnected components.
     """
 
     if v != None and v >= G.order():
@@ -45,8 +51,8 @@ def eccentricity(G, n_nodes, v=None):
 
     if v != None:
         sp = sg.digraph_traversal.bfs_all(G, v)
-        if G.out_degree(v) == 0:
-            return (2 ** 32) - 1
+        if sp[1].size < n_nodes:
+            raise StaticGraphDisconnectedGraphException("disconnected graph!!")
         return sp[0].size - 2
 
     ecc = empty((2, n_nodes), dtype = uint32)
@@ -54,8 +60,8 @@ def eccentricity(G, n_nodes, v=None):
     for i in xrange(n_nodes):
         sp = sg.digraph_traversal.bfs_all(G, nodes[i])
         ecc[0, i] = nodes[i]
-        if G.out_degree(nodes[i]) == 0:
-            ecc[1, i] = (2 ** 32) - 1
+        if sp[1].size < n_nodes:
+            raise StaticGraphDisconnectedGraphException("disconnected graph!!")
         else:
             ecc[1, i] = sp[0].size - 2
 

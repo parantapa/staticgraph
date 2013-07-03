@@ -96,7 +96,7 @@ def make_comp(size_t n_nodes, size_t n_edges, object edges, ndarray[uint32_t] p_
     # Eliminating parallel edges
 
     i, j, del_ctr = 0, 1, 0
-    p_ptr = 0  
+    p_ptr = p_indptr[0] 
     for n in xrange(n_nodes):
         if(p_ptr == p_indptr[n + 1]):
             continue

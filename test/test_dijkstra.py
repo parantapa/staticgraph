@@ -52,7 +52,7 @@ def test_dijkstra_graph(testgraph):
     nx_dijk =  nx.dijkstra_predecessor_and_distance(a, s)
     nx_dijk = nx_dijk[1]
     sg_dijk = sg.dijkstra.dijkstra_all(b, s)
-    for i in range(len(sg_dijk[0])):
+    for i in range(len(nx_dijk)):
         assert sg_dijk[1][i] == nx_dijk[sg_dijk[0][i]]
 
 def test_dijkstra_digraph(testgraph):
@@ -65,5 +65,5 @@ def test_dijkstra_digraph(testgraph):
     nx_dijk =  nx.dijkstra_predecessor_and_distance(a, s)
     nx_dijk = nx_dijk[1]
     sg_dijk = sg.dijkstra.dijkstra_all(b, s, directed = True)
-    for i in range(len(sg_dijk[0])):
+    for i in range(len(nx_dijk)):
         assert sg_dijk[1][i] == nx_dijk[sg_dijk[0][i]]
