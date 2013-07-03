@@ -16,7 +16,7 @@ def pytest_generate_tests(metafunc):
         testgraphs = []
 
     # 100 vertex random graph
-        a = nx.gnp_random_graph(100, 0.1, directed = True)
+        a = nx.gnp_random_graph(100, 0.5, directed = True)
         deg = sg.digraph.make_deg(a.order(), a.edges_iter())
         b = sg.digraph.make(a.order(), a.size(), a.edges_iter(), deg)
         testgraphs.append((a, b))
