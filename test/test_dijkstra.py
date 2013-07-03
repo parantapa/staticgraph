@@ -48,7 +48,7 @@ def test_dijkstra_all_graph(testgraph):
     """
 
     a, b = testgraph[0:2]
-    s = randint(0, 100)
+    s = randint(0, 99)
     nx_dijk =  nx.dijkstra_predecessor_and_distance(a, s)
     nx_dijk = nx_dijk[1]
     sg_dijk = sg.dijkstra.dijkstra_all(b, s)
@@ -61,7 +61,7 @@ def test_dijkstra_all_digraph(testgraph):
     """
 
     a, b = testgraph[2:]
-    s = randint(0, 100)
+    s = randint(0, 99)
     nx_dijk =  nx.dijkstra_predecessor_and_distance(a, s)
     nx_dijk = nx_dijk[1]
     sg_dijk = sg.dijkstra.dijkstra_all(b, s, directed = True)
@@ -74,8 +74,8 @@ def test_dijkstra_search_graph(testgraph):
     """
 
     a, b = testgraph[0:2]
-    s = randint(0, 100)
-    t = randint(0, 100)
+    s = randint(0, 99)
+    t = randint(0, 99)
     nx_dijk =  nx.dijkstra_path_length(a, s, t)
     sg_dijk = sg.dijkstra.dijkstra_search(b, s, t)
     assert nx_dijk == sg_dijk[1]
@@ -86,8 +86,8 @@ def test_dijkstra_search_digraph(testgraph):
     """
 
     a, b = testgraph[2:]
-    s = randint(0, 100)
-    t = randint(0, 100)
+    s = randint(0, 99)
+    t = randint(0, 99)
     nx_dijk =  nx.dijkstra_path_length(a, s, t)
     sg_dijk = sg.dijkstra.dijkstra_search(b, s, t, directed = True)
     assert nx_dijk == sg_dijk[1]
